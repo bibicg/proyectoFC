@@ -1,0 +1,50 @@
+package com.bcg.cartaller;
+
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+
+import androidx.fragment.app.Fragment;
+
+/**
+ * Acceso a este fragment desde el menú lateral "Clientes"
+ * Desde aquí, el mecánico podrá buscar clientes y añadir nuevos clientes
+ * Ambas informaciones se mostrarán en un contenedor en esta misma página, a través de fragments
+ * Dependiendo del botón que se clique, se cargará un fragment u otro
+ */
+public class ClientsFragment extends Fragment {
+
+    public ClientsFragment() {}
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_clients, container, false);
+
+        // Botones para buscar clientes y para añadir un nuevo cliente
+        Button btnBuscar = view.findViewById(R.id.btnBuscarCliente);
+        Button btnNuevo = view.findViewById(R.id.btnNuevoCliente);
+
+        // Este es el contenedor donde se van a cargar los fragments (search y new)
+        getChildFragmentManager().beginTransaction()
+                .replace(R.id.clientsGeneralContainer, new ClientsSearchFragment())
+                .commit();
+
+        // Según se clique un botón u otro, se cargará el fragmento correspondiente en el contenedor
+        // creado en el xml:
+        btnBuscar.setOnClickListener(v -> {
+            getChildFragmentManager().beginTransaction()
+                    .replace(R.id.clientsGeneralContainer, new ClientsSearchFragment())
+                    .commit();
+        });
+
+        btnNuevo.setOnClickListener(v -> {
+            getChildFragmentManager().beginTransaction()
+                    .replace(R.id.clientsGeneralContainer, new ClientsNewFragment())
+                    .commit();
+        });
+
+        return view;
+    }
+}

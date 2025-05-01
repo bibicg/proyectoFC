@@ -1,0 +1,32 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_clients"
+            android:title="Clientes"
+            android:icon="@drawable/clientes"
+            android:checkable="true"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/nav_jobs"
+            android:title="Trabajos"
+            android:icon="@drawable/trabajos"
+            android:checkable="true"
+            app:showAsAction="never" />
+
+
+        <item
+            android:id="@+id/nav_profile"
+            android:title="Perfil"
+            android:icon="@drawable/perfil"
+            android:checkable="true"
+            app:showAsAction="never" />
+    </group>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:title="Cerrar Sesión"
+        android:icon="@drawable/cerrar_sesion"
+        app:showAsAction="never" />
+</menu>

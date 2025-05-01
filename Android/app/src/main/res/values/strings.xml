@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">CarTaller</string>
+
+    <!--Profile View-->
+    <string name="profile_title">Perfil</string>
+    <string name="user_username">USERNAME</string>
+    <string name="view_details">Ver detalles</string>
+    <string name="open_drawer">Abrir</string>
+    <string name="close_drawer">Cerrar</string>
+</resources>
