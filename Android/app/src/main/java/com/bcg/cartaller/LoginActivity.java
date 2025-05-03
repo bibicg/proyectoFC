@@ -1,6 +1,6 @@
 package com.bcg.cartaller;
 
-
+import android.content.SharedPreferences;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.EditText;
@@ -50,7 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         btnRegister.setOnClickListener(v -> registerUser());
 
         btnLogin = findViewById(R.id.buttonLogin);
-        btnLogin.setOnClickListener(v -> loginUser());
+        btnLogin.setOnClickListener(v -> loginUser3());
 
         queue = Volley.newRequestQueue(this); // inicializo la cola de peticiones
     }
@@ -60,7 +60,8 @@ public class LoginActivity extends AppCompatActivity {
      * Método para registrarte en la app después de haberte registrado
      * Quizás le cambio el nombre a ENTRAR
      */
-    public void loginUser() {
+
+    public void loginUser3() {
         String email = etMail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
@@ -69,15 +70,16 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        String url = "https://gtiqlopkoiconeivobxa.supabase.co/auth/v1/token";
+        //url de supabase para loguerase con token:
+        String url = "https://gtiqlopkoiconeivobxa.supabase.co/auth/v1/token?grant_type=password";
 
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("email", email);
             jsonBody.put("password", password);
-            jsonBody.put("grant_type", "password");
         } catch (JSONException e) {
-            e.printStackTrace();
+            Log.e("SUPABASE", "JSON error: " + e.getMessage());
+            return;
         }
 
         JsonObjectRequest request = new JsonObjectRequest(
@@ -85,8 +87,6 @@ public class LoginActivity extends AppCompatActivity {
                 url,
                 jsonBody,
                 response -> {
-                    Log.d("SUPABASE", "Login correcto: " + response.toString());
-
                     try {
                         String accessToken = response.getString("access_token");
                         String userId = response.getJSONObject("user").getString("id");
@@ -94,8 +94,12 @@ public class LoginActivity extends AppCompatActivity {
                         Log.d("SUPABASE", "Access token: " + accessToken);
                         Log.d("SUPABASE", "User ID: " + userId);
 
-                        // Guardar token???? comprobar cómo se guarda en supabase
-                        // por si también usa SharedPreferences o alguna otra cosa
+                        // guardamos el token en las SP:
+                        SharedPreferences prefs = getSharedPreferences("SupabasePrefs", MODE_PRIVATE);
+                        SharedPreferences.Editor editor = prefs.edit();
+                        editor.putString("access_token", accessToken);
+                        editor.putString("user_id", userId);
+                        editor.apply();
 
                         Toast.makeText(this, "Te has logueado correctamente", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -103,34 +107,34 @@ public class LoginActivity extends AppCompatActivity {
                         finish();
 
                     } catch (JSONException e) {
-                        e.printStackTrace();
+                        Log.e("SUPABASE", "Error al parsear login: " + e.getMessage());
                     }
                 },
                 error -> {
                     Log.e("SUPABASE", "Error al iniciar sesión: " + error.toString());
-
                     if (error.networkResponse != null) {
                         int statusCode = error.networkResponse.statusCode;
                         String body = new String(error.networkResponse.data);
                         Log.e("SUPABASE", "Código HTTP: " + statusCode);
                         Log.e("SUPABASE", "Respuesta Supabase: " + body);
                     }
-
-                    Toast.makeText(this, "Error al iniciar sesión: " + error.toString(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Error al iniciar sesión", Toast.LENGTH_SHORT).show();
                 }
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 Map<String, String> headers = new HashMap<>();
-                // Api Key anon de mi ProyectoFC en Supabase:
+                //api key anon:
                 headers.put("apikey", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o");
                 headers.put("Content-Type", "application/json");
+                headers.put("Accept", "application/json");
                 return headers;
             }
         };
 
-        queue.add(request);
+        Volley.newRequestQueue(this).add(request);
     }
+
 
 
 
