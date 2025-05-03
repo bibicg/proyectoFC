@@ -180,7 +180,9 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("SUPABASE", "Usuario registrado: " + response.toString());
 
                     try {
-                        String userId = response.getString("id");
+                        //String userId = response.getString("id");
+                        String userId = response.getJSONObject("user").getString("id");
+
 
                         Log.d("SUPABASE", "ID del usuario: " + userId);
 
