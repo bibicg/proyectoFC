@@ -82,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Esto es heredado de la práctica de DI con Firebase, tengo que ver cómo hacerlo aquí
+     *
+     * POR AHORA, TAL CUAL, ESTÁ FUNCIONANDO :)
      */
     private void logoutUser() {
         //FirebaseAuth.getInstance().signOut();
