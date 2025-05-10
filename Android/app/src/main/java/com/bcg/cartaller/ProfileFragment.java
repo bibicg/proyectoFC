@@ -85,7 +85,10 @@ public class ProfileFragment extends Fragment {
                 "&estado=in.(pendiente,en%20curso)";
 
 
-        JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
                 response -> {
                     List<Trabajo> trabajos = new ArrayList<>();
                     try {
