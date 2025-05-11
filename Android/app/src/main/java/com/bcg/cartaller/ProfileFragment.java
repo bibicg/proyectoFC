@@ -65,6 +65,8 @@ public class ProfileFragment extends Fragment {
         return view;
     }
 
+
+
     private void verTrabajosActivos() {
         //lo primero es recuperar el id del usuario para poder ver solo sus trabajos
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
@@ -92,28 +94,32 @@ public class ProfileFragment extends Fragment {
                         Log.d("SUPABASE", "Respuesta completa: " + response.toString());
                         Log.d("SUPABASE", "Cantidad de trabajos: " + response.length());
 
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject trabajoJson = response.getJSONObject(i);
-                            Trabajo trabajo = new Trabajo();
-                            trabajo.id = trabajoJson.getString("id");
-                            trabajo.estado = trabajoJson.getString("estado");
-                            trabajo.descripcion = trabajoJson.getString("descripcion");
+                        if (response.length() == 0) {
+                            Toast.makeText(getContext(), "No hay trabajos activos asignados.", Toast.LENGTH_LONG).show();
+                        } else {
+                            for (int i = 0; i < response.length(); i++) {
+                                JSONObject trabajoJson = response.getJSONObject(i);
+                                Trabajo trabajo = new Trabajo();
+                                trabajo.id = trabajoJson.getString("id");
+                                trabajo.estado = trabajoJson.getString("estado");
+                                trabajo.descripcion = trabajoJson.getString("descripcion");
 
-                            JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
-                            Vehiculo vehiculo = new Vehiculo();
-                            vehiculo.matricula = vehiculoJson.getString("matricula");
+                                JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
+                                Vehiculo vehiculo = new Vehiculo();
+                                vehiculo.matricula = vehiculoJson.getString("matricula");
 
-                            JSONObject clienteJson = vehiculoJson.getJSONObject("cliente");
-                            Cliente cliente = new Cliente();
-                            cliente.dni = clienteJson.getString("dni");
+                                JSONObject clienteJson = vehiculoJson.getJSONObject("cliente");
+                                Cliente cliente = new Cliente();
+                                cliente.dni = clienteJson.getString("dni");
 
-                            vehiculo.cliente = cliente;
-                            trabajo.vehiculo = vehiculo;
+                                vehiculo.cliente = cliente;
+                                trabajo.vehiculo = vehiculo;
 
-                            trabajos.add(trabajo);
+                                trabajos.add(trabajo);
+                            }
+                            adapter = new TrabajoAdapter(trabajos);
+                            recyclerTrabajos.setAdapter(adapter);
                         }
-                        adapter = new TrabajoAdapter(trabajos);
-                        recyclerTrabajos.setAdapter(adapter);
                     } catch (JSONException e) {
                         Toast.makeText(getContext(), "Error al procesar datos", Toast.LENGTH_SHORT).show();
                     }
