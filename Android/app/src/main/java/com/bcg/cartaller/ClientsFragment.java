@@ -1,6 +1,7 @@
 package com.bcg.cartaller;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,11 +34,28 @@ public class ClientsFragment extends Fragment {
 
         // Según se clique un botón u otro, se cargará el fragmento correspondiente en el contenedor
         // creado en el xml:
+        /**
         btnBuscar.setOnClickListener(v -> {
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.clientsGeneralContainer, new ClientsSearchFragment())
                     .commit();
+        });*/
+
+        //Hacer lo mismo que en la busqueda de trabajos, mostrando las opciones en un Dialog:
+        btnBuscar.setOnClickListener(v -> {
+            ClientsSearchFragment fragment = new ClientsSearchFragment();
+            getChildFragmentManager().beginTransaction()
+                    .replace(R.id.clientsGeneralContainer, fragment)
+                    .commit();
+
+            new Handler().postDelayed(() -> {
+                Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.clientsGeneralContainer);
+                if (currentFragment instanceof ClientsSearchFragment) {
+                    ((ClientsSearchFragment) currentFragment).mostrarDialogBusqueda();
+                }
+            }, 300);
         });
+
 
         btnNuevo.setOnClickListener(v -> {
             getChildFragmentManager().beginTransaction()

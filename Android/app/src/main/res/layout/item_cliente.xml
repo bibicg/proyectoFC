@@ -1,0 +1,42 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="#FFF"
+    android:layout_marginBottom="8dp"
+    android:elevation="2dp">
+
+    <TextView
+        android:id="@+id/textClienteDni"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DNI: ---"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/textClienteNombre"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Nombre: ---" />
+
+    <TextView
+        android:id="@+id/textClienteTelefono"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Teléfono: ---" />
+
+    <TextView
+        android:id="@+id/textClienteVehiculos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Vehículos: 0" />
+
+    <Button
+        android:id="@+id/anadirVehiculoButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Añadir vehículo"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp"/>
+</LinearLayout>
