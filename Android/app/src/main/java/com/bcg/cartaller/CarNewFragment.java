@@ -88,7 +88,7 @@ public class CarNewFragment extends Fragment {
     //private void guardarVehiculo(String matricula, String marca, String modelo, String dni) {
     private void guardarVehiculo(String matricula, String marca, String modelo, int clienteId){
 
-    String url = SUPABASE_URL + "/rest/v1/vehiculos";
+        String url = SUPABASE_URL + "/rest/v1/vehiculos";
 
         JSONObject vehiculoJson = new JSONObject();
         try {
