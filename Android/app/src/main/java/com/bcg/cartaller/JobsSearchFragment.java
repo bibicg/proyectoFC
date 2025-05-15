@@ -76,6 +76,7 @@ public class JobsSearchFragment extends Fragment {
     }
 
     //Este metodo es el que muestra el dialog y permite elegir la opción de busqueda:
+   //Lopodría hacer como el de newFragment de las tareas, que es de opción múltiple
     public void mostrarDialogBusqueda() {
         CharSequence[] opciones = {"Por estado", "Por DNI", "Por matrícula"};
 
