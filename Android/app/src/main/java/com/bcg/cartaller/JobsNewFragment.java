@@ -325,46 +325,46 @@ public class JobsNewFragment extends Fragment {
             String urlTrabajos = SUPABASE_URL + "/rest/v1/trabajos";
 
             /** DA ERROR, COMO EN CLIENTE
-            JsonObjectRequest requestTrabajo = new JsonObjectRequest(
-                    Request.Method.POST,
-                    urlTrabajos,
-                    trabajoJson,
-                    responseTrabajo -> {
-                        int trabajoId = responseTrabajo.optInt("id"); // Obtener el ID del trabajo recién creado
-                        Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+             JsonObjectRequest requestTrabajo = new JsonObjectRequest(
+             Request.Method.POST,
+             urlTrabajos,
+             trabajoJson,
+             responseTrabajo -> {
+             int trabajoId = responseTrabajo.optInt("id"); // Obtener el ID del trabajo recién creado
+             Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
-                        if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
-                            guardarTareas(trabajoId, tareasDescripcion);
-                        }
+             if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
+             guardarTareas(trabajoId, tareasDescripcion);
+             }
 
-                    },
-                    errorTrabajo -> {
-                        Toast.makeText(getContext(), "Error al guardar el trabajo", Toast.LENGTH_SHORT).show();
-                        Log.e("SUPABASE", "Error al guardar trabajo", errorTrabajo);
+             },
+             errorTrabajo -> {
+             Toast.makeText(getContext(), "Error al guardar el trabajo", Toast.LENGTH_SHORT).show();
+             Log.e("SUPABASE", "Error al guardar trabajo", errorTrabajo);
 
-                        if (errorTrabajo.networkResponse != null) {
-                            int statusCode = errorTrabajo.networkResponse.statusCode;
-                            String responseBody = new String(errorTrabajo.networkResponse.data);
-                            Log.e("SUPABASE", "Código HTTP: " + statusCode);
-                            Log.e("SUPABASE", "Respuesta del servidor: " + responseBody);
-                        } else {
-                            Log.e("SUPABASE", "No hay respuesta del servidor (posible problema de red o CORS)");
-                        }
-                    }
+             if (errorTrabajo.networkResponse != null) {
+             int statusCode = errorTrabajo.networkResponse.statusCode;
+             String responseBody = new String(errorTrabajo.networkResponse.data);
+             Log.e("SUPABASE", "Código HTTP: " + statusCode);
+             Log.e("SUPABASE", "Respuesta del servidor: " + responseBody);
+             } else {
+             Log.e("SUPABASE", "No hay respuesta del servidor (posible problema de red o CORS)");
+             }
+             }
 
-            ) {
-                @Override
-                public Map<String, String> getHeaders() {
-                    SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
-                    String token = prefs.getString("access_token", "");
+             ) {
+            @Override
+            public Map<String, String> getHeaders() {
+            SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+            String token = prefs.getString("access_token", "");
 
-                    Map<String, String> headers = new HashMap<>();
-                    headers.put("apikey", API_ANON_KEY);
-                    headers.put("Authorization", "Bearer " + token);
-                    headers.put("Content-Type", "application/json");
-                    headers.put("Prefer", "return=representation");
-                    return headers;
-                }
+            Map<String, String> headers = new HashMap<>();
+            headers.put("apikey", API_ANON_KEY);
+            headers.put("Authorization", "Bearer " + token);
+            headers.put("Content-Type", "application/json");
+            headers.put("Prefer", "return=representation");
+            return headers;
+            }
             };*/
 
             //A VER SI CON JsonArrayRequest....

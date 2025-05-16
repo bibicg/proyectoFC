@@ -79,7 +79,7 @@ public class ProfileFragment extends Fragment {
 
         Log.d("SUPABASE", "Usando mecanico_id: " + mecanicoId);
 
-        //es como una consulta sql hecha desde la app conlas particularidades de suabase, como el eq
+        //es como una consulta sql hecha desde la app con las particularidades de supabase, como el "eq"
         //se mostrarán todos los trabajos cuyo estado sea pendiente o en curso
         String url = SUPABASE_URL + "/rest/v1/trabajos" +
                 "?select=id,estado,descripcion,fecha_inicio,vehiculos(matricula,cliente:clientes(dni))" +
