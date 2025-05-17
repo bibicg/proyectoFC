@@ -117,7 +117,8 @@ public class LoginActivity extends AppCompatActivity {
 
                         insertUIDinMecanicos();
 
-                        //loginUser(); //fuerzo que vaya al login porque sino queda raro
+                        Toast.makeText(this, "INICIA SESIÓN (PULSA EL BOTÓN Y ACCEDE A LA APP)", Toast.LENGTH_SHORT).show();
+                        loginUser(); //fuerzo que vaya al login porque sino queda raro
                         /**
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();*/
@@ -178,10 +179,20 @@ public class LoginActivity extends AppCompatActivity {
                 new JSONArray().put(updateMecanico),
                 response -> {
                     Log.d("SUPABASE", "Mecánico actualizado");
-                    loginUser();
+                    Toast.makeText(this, "Perfil enlazado correctamente.", Toast.LENGTH_SHORT).show();
+
+                    //loginUser();
                 },
                 error -> {
-                    Toast.makeText(this, "Error al actualizar mecánico.", Toast.LENGTH_LONG).show();
+                    if (error.networkResponse != null && error.networkResponse.data != null) {
+                        String body = new String(error.networkResponse.data);
+                        Log.e("SUPABASE", "Error al actualizar mecánico - Respuesta: " + body);
+                        Toast.makeText(this, "Error al enlazar tu perfil.", Toast.LENGTH_LONG).show(); // muestra el error real si hay respuesta
+                    } else {
+                        Log.w("SUPABASE", "Actualización de auth_id exitosa (sin respuesta del servidor), pero Volley reportó error.");
+                        //POR AHORA, NO MOSTRAR ESTE TOAST PQ SIEMPRE SALE AUNQUE TODO FUNCIONA BIEN:
+                        //Toast.makeText(this, "Error al enlazar tu perfil.", Toast.LENGTH_LONG).show();
+                    }
                 }) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
@@ -207,20 +218,26 @@ public class LoginActivity extends AppCompatActivity {
         String email = etMail.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
 
+        Log.d("LOGIN", "Iniciando loginUser con email: " + email);
+
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Debes introducir email y contraseña.", Toast.LENGTH_SHORT).show();
+            Log.w("LOGIN", "Email o contraseña vacíos.");
             return;
         }
 
         //url de supabase para loguerase con token:
         String url = SUPABASE_URL + "/auth/v1/token?grant_type=password";
+        Log.d("LOGIN", "URL de login: " + url);
 
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("email", email);
             jsonBody.put("password", password);
+            Log.d("LOGIN", "Cuerpo JSON de login: " + jsonBody.toString());
         } catch (JSONException e) {
             Log.e("SUPABASE", "JSON error: " + e.getMessage());
+            Log.e("LOGIN", "Error al crear cuerpo JSON de login: " + e.getMessage());
             return;
         }
 
@@ -229,28 +246,35 @@ public class LoginActivity extends AppCompatActivity {
                 url,
                 jsonBody,
                 response -> {
+                    Log.d("LOGIN", "Respuesta de login exitosa: " + response.toString());
                     try {
                         String accessToken = response.getString("access_token");
+                        Log.d("LOGIN", "Token de acceso obtenido: " + accessToken);
+
 
                         // guardo el tokken, porque :
                         SharedPreferences authPrefs = getSharedPreferences("SupabasePrefs", MODE_PRIVATE);
                         authPrefs.edit().putString("access_token", accessToken).apply();
+                        Log.d("LOGIN", "Token de acceso guardado en SharedPreferences.");
+
 
                         // llamada a metodo
+                        Log.d("LOGIN", "Llamando a obtenerMecanicoPorEmail con token: " + accessToken + " y email: " + email);
                         obtenerMecanicoPorEmail(accessToken, email);
 
 
                     } catch (JSONException e) {
                         Log.e("SUPABASE", "Error de login: " + e.getMessage());
+                        Log.e("LOGIN", "Error al procesar respuesta de login: " + e.getMessage());
                     }
                 },
                 error -> {
-                    Log.e("SUPABASE", "Error al iniciar sesión: " + error.toString());
+                    Log.e("LOGIN", "Error al iniciar sesión: " + error.toString());
                     if (error.networkResponse != null) {
                         int statusCode = error.networkResponse.statusCode;
                         String body = new String(error.networkResponse.data);
-                        Log.e("SUPABASE", "Código HTTP: " + statusCode);
-                        Log.e("SUPABASE", "Respuesta Supabase: " + body);
+                        Log.e("LOGIN", "Código HTTP de error: " + statusCode);
+                        Log.e("LOGIN", "Cuerpo de error de Supabase: " + body);
                     }
                     Toast.makeText(this, "Error al iniciar sesión", Toast.LENGTH_SHORT).show();
                 }
@@ -261,6 +285,7 @@ public class LoginActivity extends AppCompatActivity {
                 //api key anon:
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Content-Type", "application/json");
+                Log.d("LOGIN", "Encabezados de la petición de login: " + headers.toString());
                 return headers;
             }
         };
@@ -271,6 +296,8 @@ public class LoginActivity extends AppCompatActivity {
     //Este metodo es usado por loginUser:
     private void obtenerMecanicoPorEmail(String token, String email) {
         String url = SUPABASE_URL + "/rest/v1/mecanicos?select=id&email=eq." + Uri.encode(email);
+        Log.d("OBTENER_MECANICO", "URL para obtener mecánico: " + url);
+        Log.d("OBTENER_MECANICO", "Token usado: " + token);
 
 
         JsonArrayRequest request = new JsonArrayRequest(
@@ -278,31 +305,49 @@ public class LoginActivity extends AppCompatActivity {
                 url,
                 null,
                 response -> {
+                    Log.d("OBTENER_MECANICO", "Respuesta para obtener mecánico: " + response.toString());
+
                     try {
                         if (response.length() > 0) {
                             String mecanicoId = response.getJSONObject(0).getString("id");
+                            Log.d("OBTENER_MECANICO", "ID del mecánico obtenido: " + mecanicoId);
                             SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
                             prefs.edit().putString("mecanico_id", mecanicoId).apply();
+                            Log.d("OBTENER_MECANICO", "ID del mecánico guardado en SharedPreferences.");
 
-                            //Como el login se ha realizado con exito, se abre el mainActivity:
                             Toast.makeText(this, "Login correcto", Toast.LENGTH_SHORT).show();
+
+                            //Como el login se ha hecho correctamente, se inicia el main activity:
                             startActivity(new Intent(LoginActivity.this, MainActivity.class));
                             finish();
+                            Log.d("OBTENER_MECANICO", "Inicio de MainActivity.");
 
                         } else {
                             Toast.makeText(this, "No se encontró mecánico con ese email.", Toast.LENGTH_SHORT).show();
+                            Log.w("OBTENER_MECANICO", "No se encontró mecánico con el email: " + email);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(this, "Error al procesar datos del mecánico.", Toast.LENGTH_SHORT).show();
+                        Log.e("OBTENER_MECANICO", "Error JSON al procesar datos del mecánico: " + e.getMessage());
                     }
                 },
-                error -> Toast.makeText(this, "Error al obtener datos del mecánico.", Toast.LENGTH_SHORT).show()
+                error -> {
+                    Log.e("OBTENER_MECANICO", "Error al obtener datos del mecánico: " + error.toString());
+                    if (error.networkResponse != null) {
+                        int statusCode = error.networkResponse.statusCode;
+                        String body = new String(error.networkResponse.data);
+                        Log.e("OBTENER_MECANICO", "Código HTTP de error: " + statusCode);
+                        Log.e("OBTENER_MECANICO", "Cuerpo de error de Supabase: " + body);
+                    }
+                    Toast.makeText(this, "Error al obtener datos del mecánico.", Toast.LENGTH_SHORT).show();
+                }
         ) {
             @Override
             public Map<String, String> getHeaders() {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
+                Log.d("OBTENER_MECANICO", "Encabezados de la petición para obtener mecánico: " + headers.toString());
                 return headers;
             }
         };
