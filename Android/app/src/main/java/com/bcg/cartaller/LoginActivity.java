@@ -9,11 +9,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+
+import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.HashMap;
@@ -77,8 +81,9 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
-        //url de supabase para registrarse. Esto hace que los usuarios registrados
-        //pasen a formar parte de Autenticación (sino, están en la BD solamente):
+        // url de supabase para registrarse. Esto hace que los usuarios registrados
+        // pasen a formar parte de Autenticación (sino, están en la BD solamente):
+        // (RESUMEN: crea el UID en la tabla auth.users)
         String url = SUPABASE_URL + "/auth/v1/signup";
 
         JSONObject jsonBody = new JSONObject();
@@ -99,18 +104,20 @@ public class LoginActivity extends AppCompatActivity {
                     Log.d("SUPABASE", "Usuario registrado: " + response.toString());
                     try {
                         String accessToken = response.getString("access_token");
-                        String userId = response.getJSONObject("user").getString("id");
+                        String userUid = response.getJSONObject("user").getString("id"); // es UID de auth.users
 
                         // no me está funcionando bien, necesito guardarlo en el login igualmente para que funcione
                         SharedPreferences prefs = getSharedPreferences("SupabasePrefs", MODE_PRIVATE);
                         prefs.edit()
                                 .putString("access_token", accessToken)
-                                .putString("user_id", userId)
+                                .putString("user_id", userUid)
                                 .apply();
 
                         Toast.makeText(this, "Enhorabuena, te has registrado correctamente!!", Toast.LENGTH_SHORT).show();
 
-                        loginUser(); //fuerzo que vaya al login porque sino queda raro
+                        insertUIDinMecanicos();
+
+                        //loginUser(); //fuerzo que vaya al login porque sino queda raro
                         /**
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));
                         finish();*/
@@ -145,6 +152,50 @@ public class LoginActivity extends AppCompatActivity {
 
         queue.add(request);
     }
+
+    // Necesito que el UID que se ha creado en la tabla auth.users de Supabase,
+    // se inserte en la tabla mecanicos para que funciones la autenticacion
+
+    public void insertUIDinMecanicos(){
+        SharedPreferences prefs = getSharedPreferences("SupabasePrefs", MODE_PRIVATE);
+        String userUid = prefs.getString("user_id", ""); // recupero el UID para poder guardarlo en tabla mecanicos
+        String accessToken = prefs.getString("access_token", "");
+
+        //String urlMecanicosUpdate = SUPABASE_URL + "/rest/v1/mecanicos";
+        String urlMecanicosUpdate = SUPABASE_URL + "/rest/v1/mecanicos?email=eq." + Uri.encode(etMail.getText().toString().trim());
+
+        JSONObject updateMecanico = new JSONObject();
+        try {
+            updateMecanico.put("auth_id", userUid);
+        } catch (JSONException e) {
+            Toast.makeText(this, "Error al preparar el UID.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        JsonArrayRequest requestUpdateMecanico = new JsonArrayRequest(
+                Request.Method.PATCH,
+                urlMecanicosUpdate,
+                new JSONArray().put(updateMecanico),
+                response -> {
+                    Log.d("SUPABASE", "Mecánico actualizado");
+                    loginUser();
+                },
+                error -> {
+                    Toast.makeText(this, "Error al actualizar mecánico.", Toast.LENGTH_LONG).show();
+                }) {
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + accessToken);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        queue.add(requestUpdateMecanico);
+    }
+
 
     /**
      * SE EJECUTA SIEMPRE PARA ENTRAR
