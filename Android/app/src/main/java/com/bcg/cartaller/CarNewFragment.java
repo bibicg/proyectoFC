@@ -12,35 +12,23 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
-
-import androidx.fragment.app.Fragment;
-
 import com.android.volley.AuthFailureError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.ParseError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.toolbox.HttpHeaderParser;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
 public class CarNewFragment extends Fragment {
+    private RequestQueue queue;
     private EditText etMatricula, etMarca, etModelo;
     private Button btnGuardar;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "<API_KEY_AQUI>";
+    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
 
     public CarNewFragment() {
     }
@@ -53,6 +41,8 @@ public class CarNewFragment extends Fragment {
         etMarca = view.findViewById(R.id.editTextMarca);
         etModelo = view.findViewById(R.id.editTextModelo);
         btnGuardar = view.findViewById(R.id.guardarVehiculoButton);
+
+        queue = Volley.newRequestQueue(requireContext());
 
         /**
          * El usuario busca el cliente por su dni, pero en supabase la relación entre las tablas
@@ -90,32 +80,73 @@ public class CarNewFragment extends Fragment {
 
         String url = SUPABASE_URL + "/rest/v1/vehiculos";
 
+        Log.d("SUPABASE", "Guardando vehículo para cliente ID: " + clienteId);
+
         JSONObject vehiculoJson = new JSONObject();
         try {
             vehiculoJson.put("matricula", matricula);
             vehiculoJson.put("marca", marca);
             vehiculoJson.put("modelo", modelo);
-            //vehiculoJson.put("cliente_dni", dni);
-            vehiculoJson.put("cliente_id", clienteId); // No está usando el dni realmente
-
+            //vehiculoJson.put("cliente_dni", dni); // No está usando el dni realmente
+            vehiculoJson.put("cliente_id", clienteId); // por eso cambio al id, que es lo que se usa
 
         } catch (JSONException e) {
             e.printStackTrace();
             return;
         }
 
-        JsonObjectRequest request = new JsonObjectRequest(
+        /**
+         * IMPORTANTE PARA TODAS LAS PETICIONES POST (insert en la BD):
+         * JsonObjectRequest no funciona, en principio, porque supabase devuelve siempre un array aunque se
+         * introduzca solo un objeto. Pero tampoco funciona JsonArrayRequest (porque Supabase no está
+         * devolviendo nada) y JsonArrayRequest espera parsear un json
+         * REALMENTE SÍ QUE FUNCIONAN PORQUE EL COHCE ES INTRODUCIDO EN LA TABLA DE SUPABASE, PERO LA APP
+         * MUESTRA UN TOAST DE ERROR PORQUE VOLLEY NO CONTROLA BIEN ESTA SITUACIÓN "INESPERADA"
+        */
+
+        StringRequest request = new StringRequest( // aunque supabase devuelva vacío no da error
                 Request.Method.POST,
                 url,
-                vehiculoJson,
                 response -> {
-                    Toast.makeText(getContext(), "Vehículo guardado con éxito", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Vehículo guardado en base de datos", Toast.LENGTH_SHORT).show();
                     requireActivity().getSupportFragmentManager().popBackStack();
                 },
-                error -> {
-                    Toast.makeText(getContext(), "Error al guardar vehículo", Toast.LENGTH_SHORT).show();
+                error -> { // el bloque de error se ejecuta SIEMPRE que Volley cree que hay error
                     Log.e("SUPABASE", "Error guardando vehículo", error);
+
+                    if (error.networkResponse != null) {
+                        int statusCode = error.networkResponse.statusCode;
+                        Log.e("SUPABASE", "Código de estado del error: " + statusCode);
+
+                        // esto me sirve para capturar y separar  los códigos 201 (created) y 204 (no content)
+                        // que NO SON errores reales pq si se está guardando en supabase:
+                        if (statusCode == 201 || statusCode == 204) {
+                            Toast.makeText(getContext(), "Vehículo guardado con éxito", Toast.LENGTH_SHORT).show();
+                            requireActivity().getSupportFragmentManager().popBackStack();
+                            return;
+                        }
+
+                        //si no es uno de esos errores, deduzco que sí es un error, por lo que dejo que se muestre el mensaje:
+                        String errorMessage = new String(error.networkResponse.data);
+                        Log.e("SUPABASE", "Cuerpo del error: " + errorMessage);
+                    }
+
+                    Toast.makeText(getContext(), "Error al guardar vehículo", Toast.LENGTH_SHORT).show();
                 }) {
+
+            // transforma el json en texto plano (y luego en bytes) para que volley lo envíe
+            @Override
+            public byte[] getBody() {
+                return vehiculoJson.toString().getBytes(StandardCharsets.UTF_8);
+            }
+
+            // esto es para que supabase sepa que el contenido, aunque le esté llegando transformado,
+            // es de tipo json, que es lo que espera para los inserts:
+            @Override
+            public String getBodyContentType() {
+                return "application/json";
+            }
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
@@ -129,7 +160,7 @@ public class CarNewFragment extends Fragment {
             }
         };
 
-        Volley.newRequestQueue(requireContext()).add(request);
+        queue.add(request);
     }
 }
 

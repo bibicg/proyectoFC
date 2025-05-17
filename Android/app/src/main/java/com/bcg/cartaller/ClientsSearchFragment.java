@@ -149,6 +149,7 @@ public class ClientsSearchFragment extends Fragment {
         } else {
             url = SUPABASE_URL + "/rest/v1/vehiculos?matricula=eq." + valor + "&select=cliente(*)";
         }
+        Log.d("CLIENTS_SEARCH", "URL de búsqueda: " + url);
 
         JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
@@ -170,16 +171,26 @@ public class ClientsSearchFragment extends Fragment {
                             clientes.add(cliente);
                         }
                     } catch (JSONException e) {
-                        Log.e("Clients", "Error parseando JSON", e);
+                        Log.e("CLIENTS_SEARCH", "Error parseando JSON", e);
                     }
                     adapter.notifyDataSetChanged();
                 },
-                error -> Log.e("Volley", "Error al cargar clientes", error)
+                error -> {
+                    Log.e("CLIENTS_SEARCH", "Error al cargar clientes", error);
+                    if (error.networkResponse != null) {
+                        int statusCode = error.networkResponse.statusCode;
+                        byte[] errorBytes = error.networkResponse.data;
+                        String errorMessage = new String(errorBytes);
+                        Log.e("CLIENTS_SEARCH", "Código de estado del error: " + statusCode);
+                        Log.e("CLIENTS_SEARCH", "Cuerpo del error: " + errorMessage);
+                    }
+                }
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+                Log.d("CLIENTS_SEARCH", "Token para buscar clientes: " + token);
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
