@@ -3,7 +3,6 @@ package com.bcg.cartaller;
 import android.app.DatePickerDialog;
 import android.content.Context;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,29 +10,25 @@ import android.view.ViewGroup;
 import android.content.SharedPreferences;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
-import com.bcg.cartaller.Adapters.TrabajoAdapter;
-import com.bcg.cartaller.Models.Cliente;
-import com.bcg.cartaller.Models.Trabajo;
-import com.bcg.cartaller.Models.Vehiculo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -54,7 +49,6 @@ public class JobsNewFragment extends Fragment {
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<String> tareasSeleccionadas = new ArrayList<>();
 
-
     private EditText etMatricula;
     private Button btnBuscarVehiculo;
     private TextView tvInfoVehiculo;
@@ -65,7 +59,6 @@ public class JobsNewFragment extends Fragment {
     private Button btnAnadirTarea;
 
     private int vehiculoIdSeleccionado = -1; // Inicializar con un valor que no pueda haber
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)  {
@@ -85,7 +78,7 @@ public class JobsNewFragment extends Fragment {
         btnBuscarVehiculo.setOnClickListener(v -> {
             String matricula = etMatricula.getText().toString().trim();
             if (!matricula.isEmpty()) {
-                buscarVehiculoPorMatricula(matricula);
+                searchCarByMatricula(matricula);
             } else {
                 Toast.makeText(getContext(), "Por favor, introduce la matrícula del vehículo", Toast.LENGTH_SHORT).show();
             }
@@ -112,14 +105,14 @@ public class JobsNewFragment extends Fragment {
         });
 
         // Al pulsar este botón se llama al metodo que carga en pantalla las tareas tipo guardadas anteriormente en BD:
-        btnAnadirTarea.setOnClickListener(v -> cargarTareasTipo());
+        btnAnadirTarea.setOnClickListener(v -> loadTypeTask());
 
         //Este boton solo funciona si se ha elegido una matri (!=0):
         btnGuardarTrabajo.setOnClickListener(v -> {
             if (vehiculoIdSeleccionado != -1) {
                 String descripcion = etDescripcionTrabajo.getText().toString().trim();
                 String fechaInicio = etFechaInicio.getText().toString().trim();
-                guardarTrabajo(vehiculoIdSeleccionado, descripcion, fechaInicio, tareasSeleccionadas);
+                saveJob(vehiculoIdSeleccionado, descripcion, fechaInicio, tareasSeleccionadas);
             } else {
                 Toast.makeText(getContext(), "Por favor, busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
             }
@@ -133,7 +126,7 @@ public class JobsNewFragment extends Fragment {
      * Si el vehículo aún no existe, hay que crearlo previamente.
      * @param matricula
      */
-    private void buscarVehiculoPorMatricula(String matricula) {
+    private void searchCarByMatricula(String matricula) {
         String url = SUPABASE_URL + "/rest/v1/vehiculos?select=id,marca,modelo&matricula=eq." + matricula;
 
         JsonArrayRequest request = new JsonArrayRequest(
@@ -184,7 +177,7 @@ public class JobsNewFragment extends Fragment {
     /**
      * Método para, a través de una consulta GET a la BD de supabase, conseguir el listado de todas las tareas guardadas
      */
-    private void cargarTareasTipo() {
+    private void loadTypeTask() {
         String url = SUPABASE_URL + "/rest/v1/tareas_tipo?select=descripcion";
 
         JsonArrayRequest request = new JsonArrayRequest(
@@ -201,7 +194,7 @@ public class JobsNewFragment extends Fragment {
                         }
                     }
                     //Lllama al método que permite seleccionar las tareas:
-                    mostrarDialogoSeleccionTareas(tareas);
+                    showDialogSelectTask(tareas);
                 },
                 error -> {
                     Toast.makeText(getContext(), "Error al cargar tareas guardadas en base de datos", Toast.LENGTH_SHORT).show();
@@ -225,7 +218,7 @@ public class JobsNewFragment extends Fragment {
      * Desde este método se pueden elegir una/varias tareas
      * @param tareas
      */
-    private void mostrarDialogoSeleccionTareas(List<String> tareas) {
+    private void showDialogSelectTask(List<String> tareas) {
         String[] items = tareas.toArray(new String[0]);
         boolean[] checkedItems = new boolean[items.length];
 
@@ -243,7 +236,8 @@ public class JobsNewFragment extends Fragment {
                 .show();
     }
 
-    private void guardarTareas(int trabajoId, List<String> tareasDescripcion) {
+    //guardarTareas():
+    private void saveTask(int trabajoId, List<String> tareasDescripcion) {
         String urlTareas = SUPABASE_URL + "/rest/v1/tareas";
         for (String descripcionTarea : tareasDescripcion) {
             JSONObject tareaJson = new JSONObject();
@@ -290,13 +284,13 @@ public class JobsNewFragment extends Fragment {
     }
 
     /**
-     * GUARDAR/CREAR UN NUEVO TRABAJO
+     * GUARDAR/CREAR UN NUEVO TRABAJO - guardarTrabajo
      * @param vehiculoId
      * @param descripcion
      * @param fechaInicio
      * @param tareasDescripcion
      */
-    private void guardarTrabajo(int vehiculoId, String descripcion, String fechaInicio, List<String> tareasDescripcion) {
+    private void saveJob(int vehiculoId, String descripcion, String fechaInicio, List<String> tareasDescripcion) {
         if (vehiculoId == -1) {
             Toast.makeText(getContext(), "Por favor, selecciona un vehículo primero", Toast.LENGTH_LONG).show();
             return;
@@ -367,7 +361,8 @@ public class JobsNewFragment extends Fragment {
             }
             };*/
 
-            //A VER SI CON JsonArrayRequest....
+            //A VER SI CON JsonArrayRequest.... FUNCIONA EN SUPABASE PERO MUESTRA ERRORES EN LA APP
+            /**
             JsonArrayRequest requestTrabajo = new JsonArrayRequest(
                     Request.Method.POST,
                     urlTrabajos,
@@ -405,7 +400,76 @@ public class JobsNewFragment extends Fragment {
                     return headers;
                 }
             };
-            queue.add(requestTrabajo);
+            queue.add(requestTrabajo);*/
+
+
+            //para peticiones POST (insertar) en las que necesito obtener algo para seguir (aqui, el id del trabajo
+            //insertado,para luego poder vincularle las tareas) puedo usar StringRequest y return=representation en las cabeceras,
+            // que hace que Supabase devuelva un JSON. Además, hay que hacer un parseo a JSONarray:
+
+            StringRequest request = new StringRequest(
+                    Request.Method.POST,
+                    urlTrabajos,
+                    responseString -> {
+                        try {
+                            // Supabase devuelve un array JSON como string, por eso hay que parsearlo:
+                            JSONArray responseArray = new JSONArray(responseString);
+                            JSONObject trabajo = responseArray.getJSONObject(0);
+                            int trabajoId = trabajo.getInt("id");
+
+                            Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+
+                            if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
+                                saveTask(trabajoId, tareasDescripcion);
+                            }
+                        } catch (JSONException e) {
+                            Log.e("SUPABASE", "Erroral parsear la respuesta JSON", e);
+                        }
+                    },
+                    errorTrabajo -> {
+                        Log.e("SUPABASE", "Error al guardar trabajo", errorTrabajo);
+                        int statusCode = errorTrabajo.networkResponse != null ? errorTrabajo.networkResponse.statusCode : -1;
+
+                        if (statusCode == 201 || statusCode == 204) {
+                            Toast.makeText(getContext(), "Trabajo guardado con éxito", Toast.LENGTH_SHORT).show();
+                            requireActivity().getSupportFragmentManager().popBackStack();
+                            return;
+                        }
+
+                        Toast.makeText(getContext(), "Error al guardar el trabajo", Toast.LENGTH_SHORT).show();
+                        if (errorTrabajo.networkResponse != null) {
+                            Log.e("SUPABASE", "Código: " + statusCode);
+                            Log.e("SUPABASE", new String(errorTrabajo.networkResponse.data));
+                        }
+                    }
+            ) {
+                //transforma el json en texto plano y luego en bytes (como en CarNewFragmennt)
+                @Override
+                public byte[] getBody() {
+                    return dataArray.toString().getBytes(StandardCharsets.UTF_8);
+                }
+
+                //para que supabase sepa que el contenido es un json aunque no esté en ese formato
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                    String token = prefs.getString("access_token", "");
+
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("apikey", API_ANON_KEY);
+                    headers.put("Authorization", "Bearer " + token);
+                    headers.put("Prefer", "return=representation"); //para recuperar el id del trabajo
+                    return headers;
+                }
+            };
+
+            queue.add(request);
+
 
 
         } catch (JSONException e) {
