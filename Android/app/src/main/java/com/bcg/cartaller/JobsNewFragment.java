@@ -1,15 +1,24 @@
 package com.bcg.cartaller;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.content.SharedPreferences;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -28,6 +37,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -42,6 +53,9 @@ import java.util.Map;
  * Si aún no existe ese vehículo, se debe crear en el apartado correspondiente.
  * Lo ideal sería que se pudiera crear desde aqui (en una app profesional), pero yo por ahora lo voy a hacer asi,
  * si me da tiempo, lo añado.
+ *
+ * Añado los campos que me faltan en el formulario (fecha fin y estado). A mayores de los contemplados al principio,
+ * quiero añadir comentarios y subida de imagen desde la app.
  */
 public class JobsNewFragment extends Fragment {
     private RequestQueue queue;
@@ -49,14 +63,17 @@ public class JobsNewFragment extends Fragment {
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<String> tareasSeleccionadas = new ArrayList<>();
 
-    private EditText etMatricula;
-    private Button btnBuscarVehiculo;
+    private EditText etMatricula, etDescripcionTrabajo, etFechaInicio, etFechaFin, etComentarios;
+    private Button btnBuscarVehiculo, btnFechaInicio, btnFechaFin, btnGuardarTrabajo, btnAnadirTarea, btnSeleccionarImagen;
     private TextView tvInfoVehiculo;
-    private EditText etDescripcionTrabajo;
-    private Button btnFechaInicio;
-    private EditText etFechaInicio;
-    private Button btnGuardarTrabajo;
-    private Button btnAnadirTarea;
+    private Spinner spinnerEstado;
+
+    //para la iamgen:
+    private ImageView imageViewTrabajo;
+    private static final int PICK_IMAGE_REQUEST = 1;
+    private Uri selectedImageUri = null;
+    private Bitmap bitmap;
+    private String base64Image = null;
 
     private int vehiculoIdSeleccionado = -1; // Inicializar con un valor que no pueda haber
 
@@ -72,6 +89,14 @@ public class JobsNewFragment extends Fragment {
         etFechaInicio = view.findViewById(R.id.editTextFechaInicio);
         btnGuardarTrabajo = view.findViewById(R.id.guardarButton);
         btnAnadirTarea = view.findViewById(R.id.anadirTareaButton);
+        //Los campos que añado (fechaFin y estado ya estaban contemplados al principio):
+        btnFechaFin = view.findViewById(R.id.fechaFinButton);
+        etFechaFin = view.findViewById(R.id.editTextFechaFin);
+        spinnerEstado = view.findViewById(R.id.spinnerEstado);
+        etComentarios = view.findViewById(R.id.editTextComentarios);
+        imageViewTrabajo = view.findViewById(R.id.imageViewTrabajo);
+        btnSeleccionarImagen = view.findViewById(R.id.btnSeleccionarImagen);
+
 
         queue = Volley.newRequestQueue(requireContext());
 
@@ -85,7 +110,7 @@ public class JobsNewFragment extends Fragment {
         });
 
         /**
-         * Po ahora lo hago con botón, pero mejor buscar otro elemento más estético
+         * Por ahora lo hago con botón, pero mejor buscar otro elemento más estético
          */
         btnFechaInicio.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
@@ -104,6 +129,31 @@ public class JobsNewFragment extends Fragment {
             datePickerDialog.show();
         });
 
+        btnFechaFin.setOnClickListener(v -> {
+            final Calendar calendar = Calendar.getInstance();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+            DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
+                    (view1, year1, month1, dayOfMonth) -> {
+                        //tiene que tener el formato que usa supabase para las fechas, sino lo guarda igual pero me sale mensa de error en la app:
+                        String fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
+
+                        etFechaFin.setText(fechaSeleccionada);
+                    },
+                    year, month, day);
+            datePickerDialog.show();
+        });
+
+        //Para la imagen:
+        btnSeleccionarImagen.setOnClickListener(v -> selectImage());
+
+        String[] estados = {"pendiente", "en curso", "finalizado"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, estados);
+        spinnerEstado.setAdapter(adapter);
+
+
         // Al pulsar este botón se llama al metodo que carga en pantalla las tareas tipo guardadas anteriormente en BD:
         btnAnadirTarea.setOnClickListener(v -> loadTypeTask());
 
@@ -112,13 +162,50 @@ public class JobsNewFragment extends Fragment {
             if (vehiculoIdSeleccionado != -1) {
                 String descripcion = etDescripcionTrabajo.getText().toString().trim();
                 String fechaInicio = etFechaInicio.getText().toString().trim();
-                saveJob(vehiculoIdSeleccionado, descripcion, fechaInicio, tareasSeleccionadas);
+                String fechaFin = etFechaFin.getText().toString().trim();
+                String estado = spinnerEstado.getSelectedItem().toString();
+                String comentarios = etComentarios.getText().toString().trim();
+
+                saveJob(vehiculoIdSeleccionado, descripcion, fechaInicio, fechaFin, estado, comentarios, base64Image, tareasSeleccionadas);
             } else {
-                Toast.makeText(getContext(), "Por favor, busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
             }
         });
 
         return view;
+    }
+
+    /**
+     * PARA LOS CAMPOS NUEVOS: SPINNER PARA EL ESTADO, IMAGEN Y COMENTARIOS
+     */
+
+    //para que el usuario pueda seleccionar una foto de su galeria de imágenes y subirla a la app:
+    private void selectImage() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(intent, PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == Activity.RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            try {
+                bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), selectedImageUri);
+                imageViewTrabajo.setImageBitmap(bitmap);
+                convertImageToBase64(bitmap);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Error al cargar imagen", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void convertImageToBase64(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        byte[] imageBytes = baos.toByteArray();
+        base64Image = Base64.encodeToString(imageBytes, Base64.NO_WRAP);
     }
 
     /**
@@ -289,8 +376,10 @@ public class JobsNewFragment extends Fragment {
      * @param descripcion
      * @param fechaInicio
      * @param tareasDescripcion
+     *
+     * Añadir los nuevos campos en el guardado del trabajo
      */
-    private void saveJob(int vehiculoId, String descripcion, String fechaInicio, List<String> tareasDescripcion) {
+    private void saveJob(int vehiculoId, String descripcion, String fechaInicio, String fechaFin, String estado, String comentarios, String base64Imagen, List<String> tareasDescripcion) {
         if (vehiculoId == -1) {
             Toast.makeText(getContext(), "Por favor, selecciona un vehículo primero", Toast.LENGTH_LONG).show();
             return;
@@ -311,6 +400,11 @@ public class JobsNewFragment extends Fragment {
             trabajoJson.put("descripcion", descripcion);
             trabajoJson.put("fecha_inicio", fechaInicio);
             // El estado se establece por defecto en pendiente en la BD
+            if (!fechaFin.isEmpty()) trabajoJson.put("fecha_fin", fechaFin);
+            if (!estado.isEmpty()) trabajoJson.put("estado", estado);
+            if (!comentarios.isEmpty()) trabajoJson.put("comentarios", comentarios);
+            if (base64Imagen != null) trabajoJson.put("imagen", "data:image/jpeg;base64," + base64Imagen);
+
 
             //lo añado al usar JsonArrayRequest, ya que con JsonObjectRequest da error (caso como el de clientes):
             JSONArray dataArray = new JSONArray();
