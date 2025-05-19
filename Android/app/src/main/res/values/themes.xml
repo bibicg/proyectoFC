@@ -1,9 +1,24 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+
+    <!-- Tema base con Material 3. Importado en  las dependencias -->
     <style name="Base.Theme.CarTaller" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <!-- Colores personalizados -->
+        <!--<item name="colorPrimary">#FFD400</item> --><!-- Amarillo CARTALLER -->
+        <!--<item name="colorOnPrimary">#000000</item> --> <!-- Texto negro en amarillo -->
+        <item name="colorPrimary">@color/yellow_cartaller</item>
+        <item name="colorOnPrimary">@color/black</item>
+
+        <item name="colorSecondary">#1B1B1B</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+
+        <item name="android:statusBarColor">@color/yellow_cartaller</item>
+        <item name="android:navigationBarColor">#FFFFFF</item>
+
+        <!-- Botones-->
+        <item name="android:colorButtonNormal">#FFD400</item>
+        <item name="android:textColorPrimary">#000000</item>
     </style>
 
+    <!-- Tema principal -->
     <style name="Theme.CarTaller" parent="Base.Theme.CarTaller" />
 </resources>
