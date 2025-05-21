@@ -78,6 +78,27 @@ public class ClientsSearchFragment extends Fragment {
                         .addToBackStack(null)
                         .commit();
             }
+
+            @Override
+            public void onModificarClienteClick(Cliente cliente) {
+                ClientsNewFragment fragment = new ClientsNewFragment();
+
+                Bundle args = new Bundle();
+                args.putString("dni", cliente.getDni());
+                args.putString("nombre", cliente.getNombre());
+                args.putString("apellidos", cliente.getApellidos());
+                args.putString("telefono", cliente.getTelefono());
+                args.putString("email", cliente.getEmail());
+                args.putString("direccion", cliente.getDireccion());
+                fragment.setArguments(args);
+
+                getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.clientsGeneralContainer, fragment)
+                        .addToBackStack(null)
+                        .commit();
+            }
+
         });
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -86,15 +107,16 @@ public class ClientsSearchFragment extends Fragment {
     }
 
     //añadir el método con las opciones del Dialog, como en la búsqueda de tareas:
-    public void mostrarDialogBusqueda() {
+    //antes mostrarDialogBusqueda
+    public void showSearchDialog() {
         CharSequence[] opciones = {"Por DNI", "Por matrícula"};
 
         new AlertDialog.Builder(getContext())
                 .setTitle("Buscar cliente por:")
                 .setItems(opciones, (dialog, which) -> {
                     switch (which) {
-                        case 0: buscarPorDni(); break;
-                        case 1: buscarPorMatricula(); break;
+                        case 0: searchByDni(); break;
+                        case 1: searchByMatricula(); break;
                     }
                 }).show();
     }
@@ -102,7 +124,9 @@ public class ClientsSearchFragment extends Fragment {
     //Para matricula y DNI creo un dialog personalizado (como en la práctica de Cocktails).
     //No uso el metodo showDialog para los elementos del xml porque son distintos campos.
     //si me da tiempo modifico la estetica en paso final:
-    private void buscarPorDni() {
+
+    //antes buscarPorDni
+    private void searchByDni() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
@@ -113,14 +137,15 @@ public class ClientsSearchFragment extends Fragment {
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String dni = inputField.getText().toString();
-                    if (!dni.isEmpty()) buscarClientes("dni", dni);
+                    if (!dni.isEmpty()) searchClients("dni", dni);
 
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    private void buscarPorMatricula() {
+    //antes buscarPorMatricula
+    private void searchByMatricula() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
@@ -131,7 +156,7 @@ public class ClientsSearchFragment extends Fragment {
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String matricula = inputField.getText().toString();
-                    if (!matricula.isEmpty()) buscarClientes("matricula", matricula);
+                    if (!matricula.isEmpty()) searchClients("matricula", matricula);
 
 
                 })
@@ -139,13 +164,15 @@ public class ClientsSearchFragment extends Fragment {
                 .show();
     }
 
+
     /**
-     * Funcion para ver los clientes
+     * Funcion para ver los clientes (buscarClientes al comienzo)
      */
-    private void buscarClientes(String tipo, String valor) {
+    private void searchClients(String tipo, String valor) {
         String url;
         if (tipo.equals("dni")) {
-            url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + valor;
+            //url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + valor; //asi no consigo todoslos datos del cliente
+            url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + valor + "&select=id,dni,nombre,apellidos,telefono,email,direccion";
         } else {
             url = SUPABASE_URL + "/rest/v1/vehiculos?matricula=eq." + valor + "&select=cliente(*)";
         }
@@ -162,12 +189,22 @@ public class ClientsSearchFragment extends Fragment {
                             JSONObject clienteJson = tipo.equals("dni") ? response.getJSONObject(i)
                                     : response.getJSONObject(i).getJSONObject("cliente");
 
-                            Cliente cliente = new Cliente(
+                            /*Cliente cliente = new Cliente(
                                     clienteJson.getInt("id"),
                                     clienteJson.getString("dni"),
                                     clienteJson.optString("nombre", ""),
                                     clienteJson.optString("telefono", "")
+                            );*/
+                            Cliente cliente = new Cliente(
+                                    clienteJson.getInt("id"),
+                                    clienteJson.getString("dni"),
+                                    clienteJson.optString("nombre", ""),
+                                    clienteJson.optString("apellidos", ""),
+                                    clienteJson.optString("telefono", ""),
+                                    clienteJson.optString("email", ""),
+                                    clienteJson.optString("direccion", "")
                             );
+
                             clientes.add(cliente);
                         }
                     } catch (JSONException e) {
@@ -197,9 +234,6 @@ public class ClientsSearchFragment extends Fragment {
                 return headers;
             }
         };
-
         queue.add(request);
     }
-
-
 }

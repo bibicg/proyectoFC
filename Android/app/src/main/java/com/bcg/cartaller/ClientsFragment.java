@@ -51,7 +51,7 @@ public class ClientsFragment extends Fragment {
             new Handler().postDelayed(() -> {
                 Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.clientsGeneralContainer);
                 if (currentFragment instanceof ClientsSearchFragment) {
-                    ((ClientsSearchFragment) currentFragment).mostrarDialogBusqueda();
+                    ((ClientsSearchFragment) currentFragment).showSearchDialog();
                 }
             }, 300);
         });
