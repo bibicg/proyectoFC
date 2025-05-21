@@ -3,7 +3,6 @@ package com.bcg.cartaller;
 import androidx.fragment.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,9 +22,15 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * DESDE AQUI ES DESDE DONDE SE PUEDEN CREAR COCHES, AÑADIÉNDOLOS A BD.
+ * SE HACE DESDE AQUI PORQUE ESTÁN VINCULADOS A UN CLIENTE, POR ESO ME PARECIÓ UN LUGAR ADECUADO.
+ * En caso de mejorar la app, lo ideal sería también tener otro apartado independiente de vehículos,
+ * pero realmente sería lógica replicada.
+ */
 public class CarNewFragment extends Fragment {
     private RequestQueue queue;
-    private EditText etMatricula, etMarca, etModelo;
+    private EditText etMatricula, etMarca, etModelo, etAnio;
     private Button btnGuardar;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
@@ -41,6 +46,7 @@ public class CarNewFragment extends Fragment {
         etMarca = view.findViewById(R.id.editTextMarca);
         etModelo = view.findViewById(R.id.editTextModelo);
         btnGuardar = view.findViewById(R.id.guardarVehiculoButton);
+        etAnio = view.findViewById(R.id.editTextAnio);
 
         queue = Volley.newRequestQueue(requireContext());
 
@@ -57,26 +63,39 @@ public class CarNewFragment extends Fragment {
             String matricula = etMatricula.getText().toString().trim();
             String marca = etMarca.getText().toString().trim();
             String modelo = etModelo.getText().toString().trim();
+            String anioStr = etAnio.getText().toString().trim();
+
+            //convertir el año a int:
+            int anio = -1; //valor por defecto, no hay año
+            if (!anioStr.isEmpty()) {
+                try {
+                    anio = Integer.parseInt(anioStr);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(getContext(), "El año debe ser un número válido", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
 
             /**
             if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || dni == null) {
                 Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
                 return;
             }*/
+            //Año no es obligatorio:
             if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || clienteId == -1) {
                 Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             //guardarVehiculo(matricula, marca, modelo, dni);
-            guardarVehiculo(matricula, marca, modelo, clienteId);
+            saveCar(matricula, marca, modelo, anio, clienteId);
         });
 
         return view;
     }
 
     //private void guardarVehiculo(String matricula, String marca, String modelo, String dni) {
-    private void guardarVehiculo(String matricula, String marca, String modelo, int clienteId){
+    private void saveCar(String matricula, String marca, String modelo, int anio, int clienteId){
 
         String url = SUPABASE_URL + "/rest/v1/vehiculos";
 
@@ -89,6 +108,10 @@ public class CarNewFragment extends Fragment {
             vehiculoJson.put("modelo", modelo);
             //vehiculoJson.put("cliente_dni", dni); // No está usando el dni realmente
             vehiculoJson.put("cliente_id", clienteId); // por eso cambio al id, que es lo que se usa
+
+            if (anio != -1) { //solo se incluye el año si existe
+                vehiculoJson.put("anio", anio);
+            }
 
         } catch (JSONException e) {
             e.printStackTrace();
