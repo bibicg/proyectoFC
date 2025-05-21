@@ -82,6 +82,8 @@
             android:id="@+id/guardarClienteButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableRight="@drawable/check_32_negro"
+            app:iconSize="24dp"
             android:text="Guardar Cliente"
             android:visibility="visible" />
 
@@ -89,7 +91,9 @@
             android:id="@+id/modificarDatosButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Modificar Cliente"
+            android:text="Guardar Modificaciones"
+            android:drawableRight="@drawable/check_32_negro"
+            app:iconSize="24dp"
             android:visibility="gone"
             android:layout_marginStart="16dp" />
     </LinearLayout>
