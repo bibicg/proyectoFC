@@ -155,7 +155,9 @@ public class JobsNewFragment extends Fragment {
 
 
         // Al pulsar este botón se llama al metodo que carga en pantalla las tareas tipo guardadas anteriormente en BD:
-        btnAnadirTarea.setOnClickListener(v -> loadTypeTask());
+        btnAnadirTarea.setOnClickListener(v ->
+                loadTypeTask()
+        );
 
         //Este boton solo funciona si se ha elegido una matri (!=0):
         btnGuardarTrabajo.setOnClickListener(v -> {
