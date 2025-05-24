@@ -166,6 +166,7 @@ public class ProfileFragment extends Fragment {
                                 bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
                                 bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
                                 bundle.putString("mecanico_id", trabajo.getMecanico_id());
+
                                 fragment.setArguments(bundle);
 
                                 getParentFragmentManager()

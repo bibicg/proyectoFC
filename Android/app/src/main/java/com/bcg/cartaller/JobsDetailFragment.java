@@ -21,6 +21,7 @@ import androidx.fragment.app.Fragment;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -90,6 +91,10 @@ public class JobsDetailFragment extends Fragment {
                         .commit();
             });
 
+            Log.d("SUPABASE", "ID TRABAJO = " + args.getString("trabajo_id"));
+            Log.d("SUPABASE", "ID MECANICO (Bundle) = " + args.getString("mecanico_id"));
+
+
             /**
              * ESTE BOTÓN ABRE UNA CONFIRMACIÓN PARA ELIMINAR EL TRABAJO
              */
@@ -123,18 +128,28 @@ public class JobsDetailFragment extends Fragment {
      */
     private void deleteJob(String trabajoId) {
         String url = "https://gtiqlopkoiconeivobxa.supabase.co/rest/v1/trabajos?id=eq." + trabajoId;
+        Log.d("SUPABASE", "Intentando eliminar trabajo con ID: " + trabajoId);
+        Log.d("SUPABASE", "URL: " + url);
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        String mecanicoId = prefs.getString("mecanico_id", null);
+        Log.d("SUPABASE", "Verificando mecanico_id actual (SharedPreferences): " + mecanicoId);
 
         StringRequest request = new StringRequest(
                 Request.Method.DELETE,
                 url,
                 response -> {
+                    Log.d("SUPABASE", "Respuesta DELETE (vacía esperada): '" + response + "'");
                     Toast.makeText(getContext(), "Trabajo eliminado correctamente", Toast.LENGTH_SHORT).show();
                     requireActivity().getSupportFragmentManager().popBackStack();
                 },
                 error -> {
                     Toast.makeText(getContext(), "Error al eliminar el trabajo", Toast.LENGTH_SHORT).show();
                     if (error.networkResponse != null) {
+                        Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
                         Log.e("SUPABASE", new String(error.networkResponse.data));
+                    } else {
+                        Log.e("SUPABASE", "Error sin respuesta de red: " + error.toString());
                     }
                 }
         ) {
@@ -142,14 +157,19 @@ public class JobsDetailFragment extends Fragment {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+                Log.d("SUPABASE", "Token: " + token);
 
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
+                headers.put("Prefer", "return=minimal");
                 return headers;
             }
         };
 
         queue.add(request);
     }
+
+
+
 }
