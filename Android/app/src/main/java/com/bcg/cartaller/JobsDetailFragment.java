@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
@@ -30,7 +31,7 @@ import java.util.Map;
 
 /**
  * PASO INTERMEDIO ENTRE EL CLIC DE UN TRABAJO EN EL RV Y VISUALIZARLO EN EL FORMULARIO PARA EDITARLO.
- * SIRVE PARA VISUALIZAR LA INDFORMACIÓN DETALLADA DE UN TRABAJO (el item del RV muestra un resumen).
+ * SIRVE PARA VISUALIZAR LA INFORMACIÓN DETALLADA DE UN TRABAJO (el item del RV muestra un resumen).
  * Se viene aqui desde el RV de JobsSearchFragment y el RV de ProfileFragment.
  * Desde aqui se da la posibilidad de eliminar un trabajo (único objeto que se permite borrar desde la app)
  * y de modificarlo, abriendo los detalles del trabajo en el formulario de trabajos (el mismo que se usa para crear)
@@ -69,12 +70,30 @@ public class JobsDetailFragment extends Fragment {
             tvMatricula.setText(args.getString("matricula", ""));
             tvDniCliente.setText(args.getString("dni_cliente", ""));
 
+            //Para asegurar que la img se vea tanto si la hay como si no:
             String base64Image = args.getString("imagen", null);
-            if (base64Image != null && !base64Image.isEmpty()) {
-                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
-                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-                ivTrabajo.setImageBitmap(decodedByte);
+
+            if (base64Image != null && !base64Image.trim().isEmpty()) {
+                try {
+                    if (base64Image.contains(",")) {
+                        base64Image = base64Image.substring(base64Image.indexOf(",") + 1);
+                    }
+
+                    byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                    if (bitmap != null) {
+                        ivTrabajo.setImageBitmap(bitmap);
+                    } else {
+                        ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                    }
+                } catch (IllegalArgumentException e) {
+                    Log.e("IMAGEN", "Base64 malformado: " + e.getMessage());
+                    ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                }
+            } else {
+                ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
             }
+
 
             /**
              * ESTE BOTÓN ABRE EL FORMULARIO, DENTRO DE JOBS NEW FRAGMENT, CON TODA LA INFO DEL TRABAJO CARGADA
@@ -90,9 +109,6 @@ public class JobsDetailFragment extends Fragment {
                         .addToBackStack(null)
                         .commit();
             });
-
-            Log.d("SUPABASE", "ID TRABAJO = " + args.getString("trabajo_id"));
-            Log.d("SUPABASE", "ID MECANICO (Bundle) = " + args.getString("mecanico_id"));
 
 
             /**
@@ -121,7 +137,6 @@ public class JobsDetailFragment extends Fragment {
     }
 
 
-
     /**
      * eliminarTrabajo
      * @param trabajoId
@@ -139,9 +154,20 @@ public class JobsDetailFragment extends Fragment {
                 Request.Method.DELETE,
                 url,
                 response -> {
-                    Log.d("SUPABASE", "Respuesta DELETE (vacía esperada): '" + response + "'");
-                    Toast.makeText(getContext(), "Trabajo eliminado correctamente", Toast.LENGTH_SHORT).show();
-                    requireActivity().getSupportFragmentManager().popBackStack();
+                    //Toast.makeText(getContext(), "Trabajo eliminado correctamente", Toast.LENGTH_SHORT).show();
+                    //requireActivity().getSupportFragmentManager().popBackStack();
+
+                    //se muestra un dialog de confirmacion en lugar de un toast:
+                    new AlertDialog.Builder(requireContext())
+                            .setTitle("Trabajo eliminado")
+                            .setMessage("El trabajo ha sido eliminado correctamente.")
+                            .setPositiveButton("Aceptar", (dialog, which) -> {
+                                FragmentManager fm = requireActivity().getSupportFragmentManager();
+                                if (fm.getBackStackEntryCount() > 0) {
+                                    fm.popBackStack(); //vuelta a la pantalla anterior
+                                }
+                            })
+                            .show();
                 },
                 error -> {
                     Toast.makeText(getContext(), "Error al eliminar el trabajo", Toast.LENGTH_SHORT).show();

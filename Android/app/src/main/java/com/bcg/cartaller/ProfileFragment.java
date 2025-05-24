@@ -112,10 +112,19 @@ public class ProfileFragment extends Fragment {
 
         //es como una consulta sql hecha desde la app con las particularidades de supabase, como el "eq"
         //se mostrarán todos los trabajos cuyo estado sea pendiente o en curso
+        /**
         String url = SUPABASE_URL + "/rest/v1/trabajos" +
                 "?select=id,estado,descripcion,fecha_inicio,vehiculos(matricula,cliente:clientes(dni))" +
                 "&mecanico_id=eq." + mecanicoId +
                 "&estado=in.(pendiente,en%20curso)";
+         */
+        //Ahora hay que añadir los nuevos campos que añadi a posteriori:
+        String url = SUPABASE_URL + "/rest/v1/trabajos" +
+                //"?select=id,estado,descripcion,fecha_inicio,imagen,vehiculos(matricula,cliente:clientes(dni))" +
+                "?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,vehiculos(matricula,cliente:clientes(dni))" +
+                "&mecanico_id=eq." + mecanicoId +
+                "&estado=in.(pendiente,en%20curso)";
+
 
 
         JsonArrayRequest request = new JsonArrayRequest(
@@ -137,6 +146,11 @@ public class ProfileFragment extends Fragment {
                                 trabajo.id = trabajoJson.getString("id");
                                 trabajo.estado = trabajoJson.getString("estado");
                                 trabajo.descripcion = trabajoJson.getString("descripcion");
+                                trabajo.imagen = trabajoJson.optString("imagen", null);
+
+                                trabajo.fecha_inicio = trabajoJson.optString("fecha_inicio", null);
+                                trabajo.fecha_fin = trabajoJson.optString("fecha_fin", null);
+                                trabajo.comentarios = trabajoJson.optString("comentarios", null);
 
                                 JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
                                 Vehiculo vehiculo = new Vehiculo();
@@ -162,7 +176,10 @@ public class ProfileFragment extends Fragment {
                                 bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
                                 bundle.putString("fecha_fin", trabajo.getFecha_fin());
                                 bundle.putString("comentarios", trabajo.getComentarios());
+
+                                Log.d("IMAGEN", "Imagen del trabajo: " + trabajo.getImagen());
                                 bundle.putString("imagen", trabajo.getImagen());
+
                                 bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
                                 bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
                                 bundle.putString("mecanico_id", trabajo.getMecanico_id());

@@ -225,7 +225,11 @@ public class JobsSearchFragment extends Fragment {
             return;
         }
 
-        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+
+        //Añadir los campos que incluí a posteriori en trabajo:
+        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos(matricula,clientes(dni))";
+
 
         // Filtros dinámicos
         List<String> filtros = new ArrayList<>();
@@ -278,12 +282,24 @@ public class JobsSearchFragment extends Fragment {
 
 
                                 Vehiculo vehiculo = new Vehiculo(vehiculoJson.getString("matricula"), cliente);
+                                /**Trabajo trabajo = new Trabajo(
+                                        String.valueOf(trabajoJson.getInt("id")),
+                                        trabajoJson.getString("estado"),
+                                        trabajoJson.getString("descripcion"),
+                                        vehiculo
+                                );*/
                                 Trabajo trabajo = new Trabajo(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
                                         vehiculo
                                 );
+                                trabajo.fecha_inicio = trabajoJson.optString("fecha_inicio", null);
+                                trabajo.fecha_fin = trabajoJson.optString("fecha_fin", null);
+                                trabajo.comentarios = trabajoJson.optString("comentarios", null);
+                                trabajo.imagen = trabajoJson.optString("imagen", null);
+                                trabajo.mecanico_id = trabajoJson.optString("mecanico_id", null);
+
                                 Log.d("Trabajos", "Respuesta recibida: " + response.toString());
 
                                 trabajos.add(trabajo);
