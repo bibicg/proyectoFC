@@ -71,12 +71,39 @@ public class MainActivity extends AppCompatActivity {
             return true;
         });
 
-        // Cargamos el ProfileFragment por defecto para que se vea  al cargar la app:
+        /** //Cargamos el ProfileFragment por defecto para que se vea  al cargar la app:
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, new ProfileFragment())
                     .commit();
             navigationView.setCheckedItem(R.id.nav_profile); // Marcar "Profile" como seleccionado
+        }*/
+
+        /**
+         * Cargamos el ProfileFragment por defecto para que se vea  al cargar la app.
+         * A no ser que haya un trabajo_id (esto sucede si se ha seleccionado un trabajo del RV),
+         * que entronces se carga JobsNewFragment directa_ en el Main, para que se vean los detalles
+         * del trabajo en el mismo formulario, pero sin los botones buscar y nuevo del JobsFragment:
+         */
+        if (savedInstanceState == null) {
+            int trabajoId = getIntent().getIntExtra("trabajo_id", -1);
+
+            Fragment defaultFragment;
+            if (trabajoId != -1) {
+                JobsNewFragment fragment = new JobsNewFragment();
+                Bundle args = new Bundle();
+                args.putInt("trabajo_id", trabajoId);
+                fragment.setArguments(args);
+                defaultFragment = fragment;
+            } else {
+                defaultFragment = new ProfileFragment();
+            }
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, defaultFragment)
+                    .commit();
+            if (trabajoId == -1) {
+                navigationView.setCheckedItem(R.id.nav_profile);
+            }
         }
     }
 
@@ -101,6 +128,5 @@ public class MainActivity extends AppCompatActivity {
             super.onBackPressed();
         }
     }
-
 
 }

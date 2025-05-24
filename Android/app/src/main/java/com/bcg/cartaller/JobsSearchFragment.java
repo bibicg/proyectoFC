@@ -68,7 +68,47 @@ public class JobsSearchFragment extends Fragment {
 
         //Recicler view (el mismo que usé en Profile Fragment) para cargar los trabajos:
         RecyclerView recyclerView = view.findViewById(R.id.recyclerTrabajos);
-        adapter = new TrabajoAdapter(trabajos);
+        //adapter = new TrabajoAdapter(trabajos); //este era antes de poder pasar la info al formulario para modificar
+        adapter = new TrabajoAdapter(trabajos, new TrabajoAdapter.OnTrabajoClickListener() {
+            @Override
+            public void onModificarTrabajoClick(Trabajo trabajo) {
+                //JobsNewFragment fragment = new JobsNewFragment();
+                JobsDetailFragment fragment = new JobsDetailFragment();
+
+                Bundle bundle = new Bundle();
+                bundle.putString("trabajo_id", trabajo.getId());
+                bundle.putString("estado", trabajo.getEstado());
+                bundle.putString("descripcion", trabajo.getDescripcion());
+                bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
+                bundle.putString("fecha_fin", trabajo.getFecha_fin());
+                bundle.putString("comentarios", trabajo.getComentarios());
+                bundle.putString("imagen", trabajo.getImagen());
+                bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
+                bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
+                bundle.putString("mecanico_id", trabajo.getMecanico_id());
+
+                fragment.setArguments(bundle);
+
+                /**getParentFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, fragment)
+                        .addToBackStack(null)
+                        .commit();*/
+                /**getParentFragmentManager() //se carga, pero dentro de JobsFragment, y se ven los btn superiores
+                        .beginTransaction()
+                        .replace(R.id.jobsGeneralContainer, fragment)
+                        .addToBackStack(null)
+                        .commit();*/
+                requireActivity().getSupportFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.fragmentContainer, fragment) //se abre el detalle en el contenedor de fragments del main para evitar los btn superiores de JobsFragment
+                        .addToBackStack(null)
+                        .commit();
+
+            }
+        });
+
+
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
@@ -76,6 +116,7 @@ public class JobsSearchFragment extends Fragment {
     }
 
     //Este metodo es el que muestra el dialog y permite elegir la opción de busqueda:
+   //Lopodría hacer como el de newFragment de las tareas, que es de opción múltiple
     public void mostrarDialogBusqueda() {
         CharSequence[] opciones = {"Por estado", "Por DNI", "Por matrícula"};
 
@@ -184,7 +225,11 @@ public class JobsSearchFragment extends Fragment {
             return;
         }
 
-        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+
+        //Añadir los campos que incluí a posteriori en trabajo:
+        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos(matricula,clientes(dni))";
+
 
         // Filtros dinámicos
         List<String> filtros = new ArrayList<>();
@@ -227,14 +272,34 @@ public class JobsSearchFragment extends Fragment {
                                 JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
                                 JSONObject clienteJson = vehiculoJson.getJSONObject("clientes");
 
+                                Log.d("JSON_DEBUG", "clienteJson = " + clienteJson.toString());
+
                                 Cliente cliente = new Cliente(clienteJson.getString("dni"));
+                                /**Cliente cliente = new Cliente(
+                                        clienteJson.optInt("id", -1),
+                                        clienteJson.optString("dni", "")
+                                );*/
+
+
                                 Vehiculo vehiculo = new Vehiculo(vehiculoJson.getString("matricula"), cliente);
+                                /**Trabajo trabajo = new Trabajo(
+                                        String.valueOf(trabajoJson.getInt("id")),
+                                        trabajoJson.getString("estado"),
+                                        trabajoJson.getString("descripcion"),
+                                        vehiculo
+                                );*/
                                 Trabajo trabajo = new Trabajo(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
                                         vehiculo
                                 );
+                                trabajo.fecha_inicio = trabajoJson.optString("fecha_inicio", null);
+                                trabajo.fecha_fin = trabajoJson.optString("fecha_fin", null);
+                                trabajo.comentarios = trabajoJson.optString("comentarios", null);
+                                trabajo.imagen = trabajoJson.optString("imagen", null);
+                                trabajo.mecanico_id = trabajoJson.optString("mecanico_id", null);
+
                                 Log.d("Trabajos", "Respuesta recibida: " + response.toString());
 
                                 trabajos.add(trabajo);
