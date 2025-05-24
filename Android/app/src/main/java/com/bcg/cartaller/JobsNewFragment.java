@@ -64,7 +64,7 @@ public class JobsNewFragment extends Fragment {
     private List<String> tareasSeleccionadas = new ArrayList<>();
 
     private EditText etMatricula, etDescripcionTrabajo, etFechaInicio, etFechaFin, etComentarios;
-    private Button btnBuscarVehiculo, btnFechaInicio, btnFechaFin, btnGuardarTrabajo, btnAnadirTarea, btnSeleccionarImagen;
+    private Button btnBuscarVehiculo, btnFechaInicio, btnFechaFin, btnGuardarTrabajo, btnAnadirTarea, btnSeleccionarImagen, btnModificarTrabajo;
     private TextView tvInfoVehiculo;
     private Spinner spinnerEstado;
 
@@ -75,7 +75,8 @@ public class JobsNewFragment extends Fragment {
     private Bitmap bitmap;
     private String base64Image = null;
 
-    private int vehiculoIdSeleccionado = -1; // Inicializar con un valor que no pueda haber
+    private int vehiculoIdSeleccionado = -1; // se inicia con -1 pq es un valor que no puede haber
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)  {
@@ -96,7 +97,7 @@ public class JobsNewFragment extends Fragment {
         etComentarios = view.findViewById(R.id.editTextComentarios);
         imageViewTrabajo = view.findViewById(R.id.imageViewTrabajo);
         btnSeleccionarImagen = view.findViewById(R.id.btnSeleccionarImagen);
-
+        btnModificarTrabajo = view.findViewById(R.id.modificarTrabajoButton);
 
         queue = Volley.newRequestQueue(requireContext());
 
@@ -108,6 +109,48 @@ public class JobsNewFragment extends Fragment {
                 Toast.makeText(getContext(), "Por favor, introduce la matrícula del vehículo", Toast.LENGTH_SHORT).show();
             }
         });
+
+        Bundle args = getArguments();
+        Log.d("SUPABASE", "Args recibidos: " + (args != null ? args.toString() : "null"));
+        boolean isEditMode = args != null && args.containsKey("trabajo_id");
+
+        if (isEditMode) {
+            // Rellenar campos
+            etDescripcionTrabajo.setText(args.getString("descripcion", ""));
+            etFechaInicio.setText(args.getString("fecha_inicio", ""));
+            etFechaFin.setText(args.getString("fecha_fin", ""));
+            etComentarios.setText(args.getString("comentarios", ""));
+            etMatricula.setText(args.getString("matricula", ""));
+            // Spinner set estado según args.getString("estado")
+
+            btnGuardarTrabajo.setVisibility(View.GONE);
+            btnModificarTrabajo.setVisibility(View.VISIBLE);
+
+            btnModificarTrabajo.setOnClickListener(v -> {
+                // Aquí llamas al método que envíe PUT request a Supabase
+                updateJob(args.getString("trabajo_id"));
+            });
+
+        } else {
+            btnGuardarTrabajo.setVisibility(View.VISIBLE);
+            btnModificarTrabajo.setVisibility(View.GONE);
+
+            //Este boton solo funciona si se ha elegido una matri (!=0):
+            btnGuardarTrabajo.setOnClickListener(v -> {
+                if (vehiculoIdSeleccionado != -1) {
+                    String descripcion = etDescripcionTrabajo.getText().toString().trim();
+                    String fechaInicio = etFechaInicio.getText().toString().trim();
+                    String fechaFin = etFechaFin.getText().toString().trim();
+                    String estado = spinnerEstado.getSelectedItem().toString();
+                    String comentarios = etComentarios.getText().toString().trim();
+
+                    saveJob(vehiculoIdSeleccionado, descripcion, fechaInicio, fechaFin, estado, comentarios, base64Image, tareasSeleccionadas);
+                } else {
+                    Toast.makeText(getContext(), "Busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
+
 
         /**
          * Por ahora lo hago con botón, pero mejor buscar otro elemento más estético
@@ -159,6 +202,7 @@ public class JobsNewFragment extends Fragment {
                 loadTypeTask()
         );
 
+/**
         //Este boton solo funciona si se ha elegido una matri (!=0):
         btnGuardarTrabajo.setOnClickListener(v -> {
             if (vehiculoIdSeleccionado != -1) {
@@ -172,7 +216,7 @@ public class JobsNewFragment extends Fragment {
             } else {
                 Toast.makeText(getContext(), "Busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
             }
-        });
+        });*/
 
         return view;
     }
@@ -573,6 +617,69 @@ public class JobsNewFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Método que permite actualizar un tabajo ya existente en BD
+     * Uso PATCH en lugar de PUT
+     * @param id
+     */
+    private void updateJob(String id) {
+        try {
+            JSONObject data = new JSONObject();
+            data.put("descripcion", etDescripcionTrabajo.getText().toString());
+            data.put("fecha_inicio", etFechaInicio.getText().toString());
+            data.put("fecha_fin", etFechaFin.getText().toString());
+            data.put("estado", spinnerEstado.getSelectedItem().toString());
+            data.put("comentarios", etComentarios.getText().toString());
+            data.put("imagen", base64Image); // puede ser null si no has seleccionado nueva
+
+            String url = SUPABASE_URL + "/rest/v1/trabajos?id=eq." + id;
+
+            StringRequest request = new StringRequest(
+                    Request.Method.PATCH, //más seguro que PUT para supabase, ya que no modifica toda la fila sino solo los campos modificados
+                    url,
+                    response -> {
+                        Toast.makeText(getContext(), "Trabajo actualizado correctamente", Toast.LENGTH_SHORT).show();
+                        requireActivity().getSupportFragmentManager().popBackStack();
+                    },
+                    error -> {
+                        Log.e("SUPABASE", "Error al actualizar trabajo", error);
+                        Toast.makeText(getContext(), "Error al actualizar trabajo", Toast.LENGTH_SHORT).show();
+                        if (error.networkResponse != null) {
+                            Log.e("SUPABASE", new String(error.networkResponse.data));
+                        }
+                    }
+            ) {
+                @Override
+                public byte[] getBody() {
+                    return data.toString().getBytes(StandardCharsets.UTF_8);
+                }
+
+                @Override
+                public String getBodyContentType() {
+                    return "application/json";
+                }
+
+                @Override
+                public Map<String, String> getHeaders() throws AuthFailureError {
+                    SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                    String token = prefs.getString("access_token", "");
+
+                    Map<String, String> headers = new HashMap<>();
+                    headers.put("apikey", API_ANON_KEY);
+                    headers.put("Authorization", "Bearer " + token);
+                    return headers;
+                }
+            };
+
+            queue.add(request);
+
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error al preparar la actualización", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
 
 
 }

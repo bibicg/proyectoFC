@@ -51,7 +51,7 @@ public class ProfileFragment extends Fragment {
     //atributos de clase para mostrar datos del mecánico logueado:
     private TextView tvNombreUsuario;
     private TextView tvCargoUsuario;
-
+    private List<Trabajo> trabajos = new ArrayList<>();
 
 
     @Nullable
@@ -64,6 +64,30 @@ public class ProfileFragment extends Fragment {
 
         recyclerTrabajos = view.findViewById(R.id.recyclerTrabajos);
         recyclerTrabajos.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        adapter = new TrabajoAdapter(trabajos, trabajo -> {
+            JobsDetailFragment fragment = new JobsDetailFragment();
+            Bundle bundle = new Bundle();
+            bundle.putString("trabajo_id", trabajo.getId());
+            bundle.putString("estado", trabajo.getEstado());
+            bundle.putString("descripcion", trabajo.getDescripcion());
+            bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
+            bundle.putString("fecha_fin", trabajo.getFecha_fin());
+            bundle.putString("comentarios", trabajo.getComentarios());
+            bundle.putString("imagen", trabajo.getImagen());
+            bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
+            bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
+            bundle.putString("mecanico_id", trabajo.getMecanico_id());
+            fragment.setArguments(bundle);
+
+            requireActivity().getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.fragmentContainer, fragment)
+                    .addToBackStack(null)
+                    .commit();
+        });
+
+        recyclerTrabajos.setAdapter(adapter);
 
         queue = Volley.newRequestQueue(getContext());
         showActiveJobs();
@@ -127,7 +151,31 @@ public class ProfileFragment extends Fragment {
 
                                 trabajos.add(trabajo);
                             }
-                            adapter = new TrabajoAdapter(trabajos);
+                            //adapter = new TrabajoAdapter(trabajos);
+                            adapter = new TrabajoAdapter(trabajos, trabajo -> {
+                                JobsDetailFragment fragment = new JobsDetailFragment();//Se abre otro fragment con info más detallada del trabajo clicado
+
+                                Bundle bundle = new Bundle();
+                                bundle.putString("trabajo_id", trabajo.getId());
+                                bundle.putString("estado", trabajo.getEstado());
+                                bundle.putString("descripcion", trabajo.getDescripcion());
+                                bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
+                                bundle.putString("fecha_fin", trabajo.getFecha_fin());
+                                bundle.putString("comentarios", trabajo.getComentarios());
+                                bundle.putString("imagen", trabajo.getImagen());
+                                bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
+                                bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
+                                bundle.putString("mecanico_id", trabajo.getMecanico_id());
+                                fragment.setArguments(bundle);
+
+                                getParentFragmentManager()
+                                        .beginTransaction()
+                                        .replace(R.id.fragmentContainer, fragment) //ese fragment detalle se carga en el container de fragments de MainActivity
+                                        .addToBackStack(null)
+                                        .commit();
+                            });
+
+
                             recyclerTrabajos.setAdapter(adapter);
                         }
                     } catch (JSONException e) {
