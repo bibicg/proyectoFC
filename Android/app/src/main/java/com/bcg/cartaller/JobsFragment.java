@@ -6,7 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import com.bcg.cartaller.JobsSearchFragment;
+
 import androidx.fragment.app.Fragment;
 
 /**
@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
  * - ver sus trabajos
  * - buscar trabajo por estado (pendiente, en curso, finalizado)
  * - buscar trabajo por matricula
- * - buscar trabajo por cliente
+ * - buscar trabajo por customer
  * - añadir nuevos trabajos
  * - modificar los existentes
  */
@@ -28,8 +28,8 @@ public class JobsFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_jobs, container, false);
 
         // Botones para buscar trabajos y para añadir un nuevo trabajo
-        Button btnBuscar = view.findViewById(R.id.btnBuscarTrabajo);
-        Button btnNuevo = view.findViewById(R.id.btnNuevoTrabajo);
+        Button btnBuscar = view.findViewById(R.id.searchJobButton);
+        Button btnNuevo = view.findViewById(R.id.newJobButton);
 
         // Este es el contenedor donde se van a cargar los fragments (search y new):
         getChildFragmentManager().beginTransaction()
@@ -50,7 +50,7 @@ public class JobsFragment extends Fragment {
             new Handler().postDelayed(() -> {
                 Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.jobsGeneralContainer);
                 if (currentFragment instanceof JobsSearchFragment) {
-                    ((JobsSearchFragment) currentFragment).mostrarDialogBusqueda();
+                    ((JobsSearchFragment) currentFragment).showSearchDialog();
                 }
             }, 300); // 300ms para dar tiempo a que se monte bien
         });

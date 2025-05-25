@@ -4,21 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView android:id="@+id/txtDetalleDni"
+    <TextView
+        android:id="@+id/txtDetailDni"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="DNI:"
+        android:text="@string/label_dni_placeholder"
         android:textSize="18sp"/>
 
-    <TextView android:id="@+id/txtDetalleNombre"
+    <TextView
+        android:id="@+id/txtDetailName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nombre:"
+        android:text="@string/label_name_placeholder"
         android:textSize="18sp"/>
 
-    <TextView android:id="@+id/txtDetalleTelefono"
+    <TextView
+        android:id="@+id/txtDetailPhone"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Teléfono:"
+        android:text="@string/label_phone_placeholder"
         android:textSize="18sp"/>
 </LinearLayout>

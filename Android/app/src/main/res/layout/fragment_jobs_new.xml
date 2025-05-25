@@ -12,155 +12,155 @@
         android:padding="16dp">
 
     <EditText
-        android:id="@+id/editTextMatricula"
+        android:id="@+id/editTextLicensePlate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Matrícula del vehículo"
+        android:hint="@string/hint_license_plate"
         android:inputType="textCapCharacters"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/buscarVehiculoButton"
+        app:layout_constraintEnd_toStartOf="@+id/searchCarButton"
         android:layout_marginEnd="8dp" />
 
     <Button
-        android:id="@+id/buscarVehiculoButton"
+        android:id="@+id/searchCarButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:icon="@drawable/check_circle_32_negro"
-        app:layout_constraintTop_toTopOf="@+id/editTextMatricula"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextMatricula"
+        app:layout_constraintTop_toTopOf="@+id/editTextLicensePlate"
+        app:layout_constraintBottom_toBottomOf="@+id/editTextLicensePlate"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
-        android:id="@+id/textViewVehiculoInfo"
+        android:id="@+id/textViewCarInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
         android:visibility="gone"
-        tools:text="Información del vehículo"
-        app:layout_constraintTop_toBottomOf="@+id/editTextMatricula"
+        android:text="@string/label_car_info"
+        app:layout_constraintTop_toBottomOf="@+id/editTextLicensePlate"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/editTextDescripcion"
+        android:id="@+id/editTextDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Descripción del trabajo"
+        android:hint="@string/hint_job_description"
         android:inputType="textMultiLine"
-        app:layout_constraintTop_toBottomOf="@+id/textViewVehiculoInfo"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCarInfo"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/fechaInicioButton"
+        android:id="@+id/startDateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Seleccionar Fecha"
-        app:layout_constraintTop_toBottomOf="@+id/editTextDescripcion"
+        android:text="@string/button_select_start_date"
+        app:layout_constraintTop_toBottomOf="@+id/editTextDescription"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginTop="16dp" />
 
     <EditText
-        android:id="@+id/editTextFechaInicio"
+        android:id="@+id/editTextStartDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Fecha de inicio"
+        android:hint="@string/hint_start_date"
         android:inputType="date"
         android:focusable="false"
         android:clickable="true"
-        app:layout_constraintTop_toTopOf="@+id/fechaInicioButton"
-        app:layout_constraintBottom_toBottomOf="@+id/fechaInicioButton"
-        app:layout_constraintStart_toEndOf="@+id/fechaInicioButton"
+        app:layout_constraintTop_toTopOf="@+id/startDateButton"
+        app:layout_constraintBottom_toBottomOf="@+id/startDateButton"
+        app:layout_constraintStart_toEndOf="@+id/startDateButton"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="8dp" />
 
     <Button
-        android:id="@+id/fechaFinButton"
+        android:id="@+id/endDateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Fecha fin"
+        android:text="@string/button_select_end_date"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/fechaInicioButton"
+        app:layout_constraintTop_toBottomOf="@id/startDateButton"
         app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
-        android:id="@+id/editTextFechaFin"
+        android:id="@+id/editTextEndDate"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Fecha de finalización"
+        android:hint="@string/hint_end_date"
         android:inputType="date"
         android:focusable="false"
         android:clickable="true"
-        app:layout_constraintTop_toTopOf="@id/fechaFinButton"
-        app:layout_constraintBottom_toBottomOf="@id/fechaFinButton"
-        app:layout_constraintStart_toEndOf="@id/fechaFinButton"
+        app:layout_constraintTop_toTopOf="@id/endDateButton"
+        app:layout_constraintBottom_toBottomOf="@id/endDateButton"
+        app:layout_constraintStart_toEndOf="@id/endDateButton"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginStart="8dp" />
 
     <Spinner
-        android:id="@+id/spinnerEstado"
+        android:id="@+id/spinnerStatus"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Estado"
+        android:prompt="@string/hint_status"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@id/fechaFinButton"
+        app:layout_constraintTop_toBottomOf="@id/endDateButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <EditText
-        android:id="@+id/editTextComentarios"
+        android:id="@+id/editTextComments"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:hint="Comentarios del mecánico"
+        android:hint="@string/hint_comments"
         android:inputType="textMultiLine"
         android:minLines="3"
-        app:layout_constraintTop_toBottomOf="@+id/spinnerEstado"
+        app:layout_constraintTop_toBottomOf="@+id/spinnerStatus"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageView
-        android:id="@+id/imageViewTrabajo"
+        android:id="@+id/imageViewJob"
         android:layout_width="0dp"
         android:layout_height="200dp"
         android:layout_marginTop="8dp"
         android:scaleType="centerCrop"
         android:background="#CCCCCC"
-        app:layout_constraintTop_toBottomOf="@id/editTextComentarios"
+        app:layout_constraintTop_toBottomOf="@id/editTextComments"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/btnSeleccionarImagen"
+        android:id="@+id/btnSelectImage"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Subir Imagen"
-        app:layout_constraintTop_toBottomOf="@id/imageViewTrabajo"
+        android:text="@string/button_upload_image"
+        app:layout_constraintTop_toBottomOf="@id/imageViewJob"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp" />
 
     <TextView
-        android:id="@+id/textViewTareas"
+        android:id="@+id/textViewTask"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Tareas:"
+        android:text="@string/label_tasks"
         android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/btnSeleccionarImagen"
+        app:layout_constraintTop_toBottomOf="@+id/btnSelectImage"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ScrollView
-        android:id="@+id/scrollViewTareas"
+        android:id="@+id/scrollViewTask"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@+id/textViewTareas"
+        app:layout_constraintTop_toBottomOf="@+id/textViewTask"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
-            android:id="@+id/layoutTareasNuevoTrabajo"
+            android:id="@+id/layoutTaskNewJob"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" />
@@ -168,32 +168,32 @@
     </ScrollView>
 
     <Button
-        android:id="@+id/anadirTareaButton"
+        android:id="@+id/addTaskButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Añadir Tarea"
+        android:text="@string/button_add_task"
         android:layout_marginTop="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/scrollViewTareas"
+        app:layout_constraintTop_toBottomOf="@+id/scrollViewTask"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-        android:id="@+id/guardarButton"
+        android:id="@+id/saveButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Guardar Trabajo"
+        android:text="@string/button_save_job"
         android:layout_marginTop="24dp"
-        app:layout_constraintTop_toBottomOf="@+id/anadirTareaButton"
+        app:layout_constraintTop_toBottomOf="@+id/addTaskButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
-         android:id="@+id/modificarTrabajoButton"
+         android:id="@+id/modifyJobButton"
          android:layout_width="0dp"
          android:layout_height="wrap_content"
-         android:text="Modificar Trabajo"
+        android:text="@string/button_modify_job"
          android:layout_marginTop="24dp"
-         app:layout_constraintTop_toBottomOf="@+id/guardarButton"
+         app:layout_constraintTop_toBottomOf="@+id/saveButton"
          app:layout_constraintStart_toStartOf="parent"
          app:layout_constraintEnd_toEndOf="parent" />
 

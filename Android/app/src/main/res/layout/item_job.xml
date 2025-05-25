@@ -15,37 +15,37 @@
         android:padding="16dp">
 
         <TextView
-            android:id="@+id/txtTrabajoId"
+            android:id="@+id/textViewJobId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Trabajo #123"
+            android:text="@string/label_job_id"
             android:textStyle="bold"
             android:textSize="16sp"
             android:textColor="@color/black" />
 
         <TextView
-            android:id="@+id/txtEstado"
+            android:id="@+id/textViewStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estado: En curso"
+            android:text="@string/label_status"
             android:textColor="@color/hint_gray"
             android:layout_marginTop="4dp"
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/txtMatricula"
+            android:id="@+id/textViewLicensePlate"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Matrícula: 1234ABC"
+            android:text="@string/label_license_plate"
             android:layout_marginTop="4dp"
             android:textColor="@color/black"
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/txtDniCliente"
+            android:id="@+id/textViewDniCustomer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Cliente: 12345678Z"
+            android:text="@string/label_customer_dni"
             android:layout_marginTop="4dp"
             android:textColor="@color/black"
             android:textSize="14sp" />

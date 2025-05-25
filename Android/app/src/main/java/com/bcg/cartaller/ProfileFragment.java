@@ -21,10 +21,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.bcg.cartaller.Adapters.TrabajoAdapter;
-import com.bcg.cartaller.Models.Cliente;
-import com.bcg.cartaller.Models.Trabajo;
-import com.bcg.cartaller.Models.Vehiculo;
+import com.bcg.cartaller.Adapters.JobAdapter;
+import com.bcg.cartaller.Models.Customer;
+import com.bcg.cartaller.Models.Job;
+import com.bcg.cartaller.Models.Car;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,21 +37,21 @@ import java.util.Map;
 /**
  * Este fragmento es el que se carga por defecto en el main al iniciar la app, ya que es el
  * perfil del mecánico que ha iniciado sesión. Se le da la bienvenida usando su username y se muestran
- * por defecto en un RV los trabajos que están sin finalizar (pendientes):
+ * por defecto en un RV los jobs que están sin finalizar (pendientes):
  */
 
 // ProfileFragment.java actualizado con headers y control RLS (hay que activarlas en supabase)
 public class ProfileFragment extends Fragment {
-    private RecyclerView recyclerTrabajos;
-    private TrabajoAdapter adapter;
+    private RecyclerView recyclerJobs;
+    private JobAdapter adapter;
     private RequestQueue queue;
     //Añado las url a una variable para no tener que estar copiando todo el codigo contantemente:
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     //atributos de clase para mostrar datos del mecánico logueado:
-    private TextView tvNombreUsuario;
-    private TextView tvCargoUsuario;
-    private List<Trabajo> trabajos = new ArrayList<>();
+    private TextView tvUserName;
+    private TextView tvUserStatus;
+    private List<Job> jobs = new ArrayList<>();
 
 
     @Nullable
@@ -59,25 +59,25 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        tvNombreUsuario = view.findViewById(R.id.userName);
-        tvCargoUsuario = view.findViewById(R.id.userUsername);
+        tvUserName = view.findViewById(R.id.userName);
+        tvUserStatus = view.findViewById(R.id.userUsername);
 
-        recyclerTrabajos = view.findViewById(R.id.recyclerTrabajos);
-        recyclerTrabajos.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerJobs = view.findViewById(R.id.recyclerJobs);
+        recyclerJobs.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        adapter = new TrabajoAdapter(trabajos, trabajo -> {
+        adapter = new JobAdapter(jobs, job -> {
             JobsDetailFragment fragment = new JobsDetailFragment();
             Bundle bundle = new Bundle();
-            bundle.putString("trabajo_id", trabajo.getId());
-            bundle.putString("estado", trabajo.getEstado());
-            bundle.putString("descripcion", trabajo.getDescripcion());
-            bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
-            bundle.putString("fecha_fin", trabajo.getFecha_fin());
-            bundle.putString("comentarios", trabajo.getComentarios());
-            bundle.putString("imagen", trabajo.getImagen());
-            bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
-            bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
-            bundle.putString("mecanico_id", trabajo.getMecanico_id());
+            bundle.putString("trabajo_id", job.getId());
+            bundle.putString("estado", job.getStatus());
+            bundle.putString("descripcion", job.getDescription());
+            bundle.putString("fecha_inicio", job.getStartDate());
+            bundle.putString("fecha_fin", job.getEndDate());
+            bundle.putString("comentarios", job.getComment());
+            bundle.putString("imagen", job.getImage());
+            bundle.putString("matricula", job.getCar().getLicensePlate());
+            bundle.putString("dni_cliente", job.getCar().getCustomer().getDni());
+            bundle.putString("mecanico_id", job.getMechanicId());
             fragment.setArguments(bundle);
 
             requireActivity().getSupportFragmentManager()
@@ -87,7 +87,7 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
-        recyclerTrabajos.setAdapter(adapter);
+        recyclerJobs.setAdapter(adapter);
 
         queue = Volley.newRequestQueue(getContext());
         showActiveJobs();
@@ -99,7 +99,7 @@ public class ProfileFragment extends Fragment {
 
     
     private void showActiveJobs() {
-        //lo primero es recuperar el id del usuario para poder ver solo sus trabajos
+        //lo primero es recuperar el id del usuario para poder ver solo sus jobs
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         String mecanicoId = prefs.getString("mecanico_id", null);
 
@@ -111,10 +111,10 @@ public class ProfileFragment extends Fragment {
         Log.d("SUPABASE", "Usando mecanico_id: " + mecanicoId);
 
         //es como una consulta sql hecha desde la app con las particularidades de supabase, como el "eq"
-        //se mostrarán todos los trabajos cuyo estado sea pendiente o en curso
+        //se mostrarán todos los jobs cuyo estado sea pendiente o en curso
         /**
-        String url = SUPABASE_URL + "/rest/v1/trabajos" +
-                "?select=id,estado,descripcion,fecha_inicio,vehiculos(matricula,cliente:clientes(dni))" +
+        String url = SUPABASE_URL + "/rest/v1/jobs" +
+                "?select=id,estado,descripcion,fecha_inicio,vehiculos(matricula,customer:clientes(dni))" +
                 "&mecanico_id=eq." + mecanicoId +
                 "&estado=in.(pendiente,en%20curso)";
          */
@@ -127,62 +127,65 @@ public class ProfileFragment extends Fragment {
 
 
 
+
+
         JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
-                    List<Trabajo> trabajos = new ArrayList<>();
+                    List<Job> jobs = new ArrayList<>();
                     try {
                         Log.d("SUPABASE", "Respuesta completa: " + response.toString());
-                        Log.d("SUPABASE", "Cantidad de trabajos: " + response.length());
+                        Log.d("SUPABASE", "Cantidad de jobs: " + response.length());
 
                         if (response.length() == 0) {
                             Toast.makeText(getContext(), "No hay trabajos activos asignados.", Toast.LENGTH_LONG).show();
                         } else {
                             for (int i = 0; i < response.length(); i++) {
                                 JSONObject trabajoJson = response.getJSONObject(i);
-                                Trabajo trabajo = new Trabajo();
-                                trabajo.id = trabajoJson.getString("id");
-                                trabajo.estado = trabajoJson.getString("estado");
-                                trabajo.descripcion = trabajoJson.getString("descripcion");
-                                trabajo.imagen = trabajoJson.optString("imagen", null);
+                                Job job = new Job();
+                                job.id = trabajoJson.getString("id");
+                                job.status = trabajoJson.getString("estado");
+                                job.description = trabajoJson.getString("descripcion");
+                                job.image = trabajoJson.optString("imagen", null);
 
-                                trabajo.fecha_inicio = trabajoJson.optString("fecha_inicio", null);
-                                trabajo.fecha_fin = trabajoJson.optString("fecha_fin", null);
-                                trabajo.comentarios = trabajoJson.optString("comentarios", null);
+                                job.startDate = trabajoJson.optString("fecha_inicio", null);
+                                job.endDate = trabajoJson.optString("fecha_fin", null);
+                                job.comment = trabajoJson.optString("comentarios", null);
 
                                 JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
-                                Vehiculo vehiculo = new Vehiculo();
-                                vehiculo.matricula = vehiculoJson.getString("matricula");
+                                Car car = new Car();
+                                car.licensePlate = vehiculoJson.getString("matricula");
 
                                 JSONObject clienteJson = vehiculoJson.getJSONObject("cliente");
-                                Cliente cliente = new Cliente();
-                                cliente.dni = clienteJson.getString("dni");
 
-                                vehiculo.cliente = cliente;
-                                trabajo.vehiculo = vehiculo;
+                                Customer customer = new Customer();
+                                customer.dni = clienteJson.getString("dni");
 
-                                trabajos.add(trabajo);
+                                car.customer = customer;
+                                job.car = car;
+
+                                jobs.add(job);
                             }
-                            //adapter = new TrabajoAdapter(trabajos);
-                            adapter = new TrabajoAdapter(trabajos, trabajo -> {
-                                JobsDetailFragment fragment = new JobsDetailFragment();//Se abre otro fragment con info más detallada del trabajo clicado
+                            //adapter = new JobAdapter(jobs);
+                            adapter = new JobAdapter(jobs, job -> {
+                                JobsDetailFragment fragment = new JobsDetailFragment();//Se abre otro fragment con info más detallada del job clicado
 
                                 Bundle bundle = new Bundle();
-                                bundle.putString("trabajo_id", trabajo.getId());
-                                bundle.putString("estado", trabajo.getEstado());
-                                bundle.putString("descripcion", trabajo.getDescripcion());
-                                bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
-                                bundle.putString("fecha_fin", trabajo.getFecha_fin());
-                                bundle.putString("comentarios", trabajo.getComentarios());
+                                bundle.putString("trabajo_id", job.getId());
+                                bundle.putString("estado", job.getStatus());
+                                bundle.putString("descripcion", job.getDescription());
+                                bundle.putString("fecha_inicio", job.getStartDate());
+                                bundle.putString("fecha_fin", job.getEndDate());
+                                bundle.putString("comentarios", job.getComment());
 
-                                Log.d("IMAGEN", "Imagen del trabajo: " + trabajo.getImagen());
-                                bundle.putString("imagen", trabajo.getImagen());
+                                Log.d("IMAGEN", "Imagen del job: " + job.getImage());
+                                bundle.putString("imagen", job.getImage());
 
-                                bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
-                                bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
-                                bundle.putString("mecanico_id", trabajo.getMecanico_id());
+                                bundle.putString("matricula", job.getCar().getLicensePlate());
+                                bundle.putString("dni_cliente", job.getCar().getCustomer().getDni());
+                                bundle.putString("mecanico_id", job.getMechanicId());
 
                                 fragment.setArguments(bundle);
 
@@ -193,15 +196,14 @@ public class ProfileFragment extends Fragment {
                                         .commit();
                             });
 
-
-                            recyclerTrabajos.setAdapter(adapter);
+                            recyclerJobs.setAdapter(adapter);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getContext(), "Error al procesar datos", Toast.LENGTH_SHORT).show();
                     }
                 },
                 error -> {
-                    Toast.makeText(getContext(), "Error al cargar trabajos", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al cargar jobs", Toast.LENGTH_SHORT).show();
                     Log.e("SUPABASE", "Error: " + error.toString());
                     if (error.networkResponse != null) {
                         Log.e("SUPABASE", "Código HTTP: " + error.networkResponse.statusCode);
@@ -246,13 +248,13 @@ public class ProfileFragment extends Fragment {
                 response -> {
                     try {
                         if (response.length() > 0) {
-                            JSONObject mecanico = response.getJSONObject(0);
-                            String nombre = mecanico.getString("nombre");
-                            String apellidos = mecanico.getString("apellidos");
-                            String cargo = mecanico.optString("cargo", "Sin cargo");
+                            JSONObject mechanic = response.getJSONObject(0);
+                            String name = mechanic.getString("nombre");
+                            String surname = mechanic.getString("apellidos");
+                            String status = mechanic.optString("cargo", "Sin cargo");
 
-                            tvNombreUsuario.setText(nombre + " " + apellidos);
-                            tvCargoUsuario.setText(cargo != null ? cargo : "Sin cargo");
+                            tvUserName.setText(name + " " + surname);
+                            tvUserStatus.setText(status != null ? status : "Sin cargo");
                         } else {
                             Toast.makeText(getContext(), "Datos del usuario no encontrados", Toast.LENGTH_SHORT).show();
                         }

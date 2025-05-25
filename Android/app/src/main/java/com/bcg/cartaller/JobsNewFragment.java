@@ -63,48 +63,48 @@ public class JobsNewFragment extends Fragment {
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<String> tareasSeleccionadas = new ArrayList<>();
 
-    private EditText etMatricula, etDescripcionTrabajo, etFechaInicio, etFechaFin, etComentarios;
-    private Button btnBuscarVehiculo, btnFechaInicio, btnFechaFin, btnGuardarTrabajo, btnAnadirTarea, btnSeleccionarImagen, btnModificarTrabajo;
-    private TextView tvInfoVehiculo;
-    private Spinner spinnerEstado;
+    private EditText etLicensePlate, etDescriptionJob, etStartDate, etEndDate, etComments;
+    private Button btnSearchCar, btnStartDate, btnEndDate, btnSaveJob, btnAddTask, btnSelectImage, btnModifyJob;
+    private TextView tvCarInfo;
+    private Spinner spinnerStatus;
 
     //para la iamgen:
-    private ImageView imageViewTrabajo;
+    private ImageView imageViewJob;
     private static final int PICK_IMAGE_REQUEST = 1;
     private Uri selectedImageUri = null;
     private Bitmap bitmap;
     private String base64Image = null;
 
-    private int vehiculoIdSeleccionado = -1; // se inicia con -1 pq es un valor que no puede haber
+    private int carIdSelect = -1; // se inicia con -1 pq es un valor que no puede haber
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)  {
         View view = inflater.inflate(R.layout.fragment_jobs_new, container, false);
 
-        etMatricula = view.findViewById(R.id.editTextMatricula);
-        btnBuscarVehiculo = view.findViewById(R.id.buscarVehiculoButton);
-        tvInfoVehiculo = view.findViewById(R.id.textViewVehiculoInfo);
-        etDescripcionTrabajo = view.findViewById(R.id.editTextDescripcion);
-        btnFechaInicio = view.findViewById(R.id.fechaInicioButton);
-        etFechaInicio = view.findViewById(R.id.editTextFechaInicio);
-        btnGuardarTrabajo = view.findViewById(R.id.guardarButton);
-        btnAnadirTarea = view.findViewById(R.id.anadirTareaButton);
+        etLicensePlate = view.findViewById(R.id.editTextLicensePlate);
+        btnSearchCar = view.findViewById(R.id.searchCarButton);
+        tvCarInfo = view.findViewById(R.id.textViewCarInfo);
+        etDescriptionJob = view.findViewById(R.id.editTextDescription);
+        btnStartDate = view.findViewById(R.id.startDateButton);
+        etStartDate = view.findViewById(R.id.editTextStartDate);
+        btnSaveJob = view.findViewById(R.id.saveButton);
+        btnAddTask = view.findViewById(R.id.addTaskButton);
         //Los campos que añado (fechaFin y estado ya estaban contemplados al principio):
-        btnFechaFin = view.findViewById(R.id.fechaFinButton);
-        etFechaFin = view.findViewById(R.id.editTextFechaFin);
-        spinnerEstado = view.findViewById(R.id.spinnerEstado);
-        etComentarios = view.findViewById(R.id.editTextComentarios);
-        imageViewTrabajo = view.findViewById(R.id.imageViewTrabajo);
-        btnSeleccionarImagen = view.findViewById(R.id.btnSeleccionarImagen);
-        btnModificarTrabajo = view.findViewById(R.id.modificarTrabajoButton);
+        btnEndDate = view.findViewById(R.id.endDateButton);
+        etEndDate = view.findViewById(R.id.editTextEndDate);
+        spinnerStatus = view.findViewById(R.id.spinnerStatus);
+        etComments = view.findViewById(R.id.editTextComments);
+        imageViewJob = view.findViewById(R.id.imageViewJob);
+        btnSelectImage = view.findViewById(R.id.btnSelectImage);
+        btnModifyJob = view.findViewById(R.id.modifyJobButton);
 
         queue = Volley.newRequestQueue(requireContext());
 
-        btnBuscarVehiculo.setOnClickListener(v -> {
-            String matricula = etMatricula.getText().toString().trim();
-            if (!matricula.isEmpty()) {
-                searchCarByMatricula(matricula);
+        btnSearchCar.setOnClickListener(v -> {
+            String licensePlate = etLicensePlate.getText().toString().trim();
+            if (!licensePlate.isEmpty()) {
+                searchCarByMatricula(licensePlate);
             } else {
                 Toast.makeText(getContext(), "Por favor, introduce la matrícula del vehículo", Toast.LENGTH_SHORT).show();
             }
@@ -116,35 +116,35 @@ public class JobsNewFragment extends Fragment {
 
         if (isEditMode) {
             // Rellenar campos
-            etDescripcionTrabajo.setText(args.getString("descripcion", ""));
-            etFechaInicio.setText(args.getString("fecha_inicio", ""));
-            etFechaFin.setText(args.getString("fecha_fin", ""));
-            etComentarios.setText(args.getString("comentarios", ""));
-            etMatricula.setText(args.getString("matricula", ""));
+            etDescriptionJob.setText(args.getString("descripcion", ""));
+            etStartDate.setText(args.getString("fecha_inicio", ""));
+            etEndDate.setText(args.getString("fecha_fin", ""));
+            etComments.setText(args.getString("comentarios", ""));
+            etLicensePlate.setText(args.getString("matricula", ""));
             // Spinner set estado según args.getString("estado")
 
-            btnGuardarTrabajo.setVisibility(View.GONE);
-            btnModificarTrabajo.setVisibility(View.VISIBLE);
+            btnSaveJob.setVisibility(View.GONE);
+            btnModifyJob.setVisibility(View.VISIBLE);
 
-            btnModificarTrabajo.setOnClickListener(v -> {
+            btnModifyJob.setOnClickListener(v -> {
                 // Aquí llamas al método que envíe PUT request a Supabase
                 updateJob(args.getString("trabajo_id"));
             });
 
         } else {
-            btnGuardarTrabajo.setVisibility(View.VISIBLE);
-            btnModificarTrabajo.setVisibility(View.GONE);
+            btnSaveJob.setVisibility(View.VISIBLE);
+            btnModifyJob.setVisibility(View.GONE);
 
             //Este boton solo funciona si se ha elegido una matri (!=0):
-            btnGuardarTrabajo.setOnClickListener(v -> {
-                if (vehiculoIdSeleccionado != -1) {
-                    String descripcion = etDescripcionTrabajo.getText().toString().trim();
-                    String fechaInicio = etFechaInicio.getText().toString().trim();
-                    String fechaFin = etFechaFin.getText().toString().trim();
-                    String estado = spinnerEstado.getSelectedItem().toString();
-                    String comentarios = etComentarios.getText().toString().trim();
+            btnSaveJob.setOnClickListener(v -> {
+                if (carIdSelect != -1) {
+                    String description = etDescriptionJob.getText().toString().trim();
+                    String startDate = etStartDate.getText().toString().trim();
+                    String endDate = etEndDate.getText().toString().trim();
+                    String status = spinnerStatus.getSelectedItem().toString();
+                    String comment = etComments.getText().toString().trim();
 
-                    saveJob(vehiculoIdSeleccionado, descripcion, fechaInicio, fechaFin, estado, comentarios, base64Image, tareasSeleccionadas);
+                    saveJob(carIdSelect, description, startDate, endDate, status, comment, base64Image, tareasSeleccionadas);
                 } else {
                     Toast.makeText(getContext(), "Busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
                 }
@@ -155,7 +155,7 @@ public class JobsNewFragment extends Fragment {
         /**
          * Por ahora lo hago con botón, pero mejor buscar otro elemento más estético
          */
-        btnFechaInicio.setOnClickListener(v -> {
+        btnStartDate.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
@@ -164,15 +164,15 @@ public class JobsNewFragment extends Fragment {
             DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                     (view1, year1, month1, dayOfMonth) -> {
                         //tiene que tener el formato que usa supabase para las fechas, sino lo guarda igual pero me sale mensa de error en la app:
-                        String fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
+                        String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
 
-                        etFechaInicio.setText(fechaSeleccionada);
+                        etStartDate.setText(selectedDate);
                     },
                     year, month, day);
             datePickerDialog.show();
         });
 
-        btnFechaFin.setOnClickListener(v -> {
+        btnEndDate.setOnClickListener(v -> {
             final Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
@@ -181,24 +181,24 @@ public class JobsNewFragment extends Fragment {
             DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(),
                     (view1, year1, month1, dayOfMonth) -> {
                         //tiene que tener el formato que usa supabase para las fechas, sino lo guarda igual pero me sale mensa de error en la app:
-                        String fechaSeleccionada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
+                        String selectedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", year1, month1 + 1, dayOfMonth);
 
-                        etFechaFin.setText(fechaSeleccionada);
+                        etEndDate.setText(selectedDate);
                     },
                     year, month, day);
             datePickerDialog.show();
         });
 
         //Para la imagen:
-        btnSeleccionarImagen.setOnClickListener(v -> selectImage());
+        btnSelectImage.setOnClickListener(v -> selectImage());
 
-        String[] estados = {"pendiente", "en curso", "finalizado"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, estados);
-        spinnerEstado.setAdapter(adapter);
+        String[] status = {"pendiente", "en curso", "finalizado"};
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, status);
+        spinnerStatus.setAdapter(adapter);
 
 
         // Al pulsar este botón se llama al metodo que carga en pantalla las tareas tipo guardadas anteriormente en BD:
-        btnAnadirTarea.setOnClickListener(v ->
+        btnAddTask.setOnClickListener(v ->
                 loadTypeTask()
         );
 
@@ -238,7 +238,7 @@ public class JobsNewFragment extends Fragment {
             selectedImageUri = data.getData();
             try {
                 bitmap = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(), selectedImageUri);
-                imageViewTrabajo.setImageBitmap(bitmap);
+                imageViewJob.setImageBitmap(bitmap);
                 convertImageToBase64(bitmap);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -270,8 +270,8 @@ public class JobsNewFragment extends Fragment {
                     if (response.length() > 0) {
                         try {
                             JSONObject vehiculoJson = response.getJSONObject(0);
-                            vehiculoIdSeleccionado = vehiculoJson.getInt("id");
-                            if (vehiculoIdSeleccionado != -1){
+                            carIdSelect = vehiculoJson.getInt("id");
+                            if (carIdSelect != -1){
                                 String marca = vehiculoJson.getString("marca");
                                 String modelo = vehiculoJson.getString("modelo");
                                 Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
@@ -281,12 +281,12 @@ public class JobsNewFragment extends Fragment {
                             e.printStackTrace();
                             Toast.makeText(getContext(), "Error al procesar información del vehículo", Toast.LENGTH_SHORT).show();
                             // Como hubo un error, vuelve a ser -1:
-                            vehiculoIdSeleccionado = -1;
+                            carIdSelect = -1;
                         }
                     } else {
                         Toast.makeText(getContext(), "No se encontró ningún vehículo con la matrícula: " + matricula + ". Por favor, añádelo desde la sección de Clientes.", Toast.LENGTH_LONG).show();
                         // Como no se ha seleccionado, vuelve a ser -1:
-                        vehiculoIdSeleccionado = -1;
+                        carIdSelect = -1;
                     }
                 },
                 error -> {
@@ -465,7 +465,7 @@ public class JobsNewFragment extends Fragment {
              trabajoJson,
              responseTrabajo -> {
              int trabajoId = responseTrabajo.optInt("id"); // Obtener el ID del trabajo recién creado
-             Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+             Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
              if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
              guardarTareas(trabajoId, tareasDescripcion);
@@ -511,7 +511,7 @@ public class JobsNewFragment extends Fragment {
                         try {
                             JSONObject trabajo = responseArray.getJSONObject(0);
                             int trabajoId = trabajo.getInt("id");
-                            Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
                             if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
                                 guardarTareas(trabajoId, tareasDescripcion);
@@ -557,7 +557,7 @@ public class JobsNewFragment extends Fragment {
                             JSONObject trabajo = responseArray.getJSONObject(0);
                             int trabajoId = trabajo.getInt("id");
 
-                            Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
                             if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
                                 saveTask(trabajoId, tareasDescripcion);
@@ -626,11 +626,11 @@ public class JobsNewFragment extends Fragment {
     private void updateJob(String id) {
         try {
             JSONObject data = new JSONObject();
-            data.put("descripcion", etDescripcionTrabajo.getText().toString());
-            data.put("fecha_inicio", etFechaInicio.getText().toString());
-            data.put("fecha_fin", etFechaFin.getText().toString());
-            data.put("estado", spinnerEstado.getSelectedItem().toString());
-            data.put("comentarios", etComentarios.getText().toString());
+            data.put("descripcion", etDescriptionJob.getText().toString());
+            data.put("fecha_inicio", etStartDate.getText().toString());
+            data.put("fecha_fin", etEndDate.getText().toString());
+            data.put("estado", spinnerStatus.getSelectedItem().toString());
+            data.put("comentarios", etComments.getText().toString());
             data.put("imagen", base64Image); // puede ser null si no has seleccionado nueva
 
             String url = SUPABASE_URL + "/rest/v1/trabajos?id=eq." + id;

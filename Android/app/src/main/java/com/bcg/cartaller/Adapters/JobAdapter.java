@@ -6,40 +6,42 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bcg.cartaller.Models.Job;
 import com.bcg.cartaller.R;
-import com.bcg.cartaller.Models.Trabajo;
+
 import java.util.List;
 
 /**
- * Mismo funcionamiento que ClientesAdapter pero para los trabajos
+ * Mismo funcionamiento que ClientesAdapter pero para los jobs
  */
-public class TrabajoAdapter extends RecyclerView.Adapter<TrabajoAdapter.TrabajoViewHolder> {
+public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
-    private final List<Trabajo> trabajos;
+    private final List<Job> jobs;
 
     //Para abrir detalle de trabajo en otro fragment cuando se clica sobre un item:
     //conveniente con Listener en fragment (con intent para activitys):
-    public interface OnTrabajoClickListener {
-        void onModificarTrabajoClick(Trabajo trabajo);
+    public interface OnJobClickListener {
+        void onModifyJobClick(Job job);
     }
 
-    private final OnTrabajoClickListener listener;
+    private final OnJobClickListener listener;
 
-    //tengo que añadire el listener que he creado en el adapter, porque antes solo tenia el listado de trabajos:
-    public TrabajoAdapter(List<Trabajo> trabajos, OnTrabajoClickListener listener) {
-        this.trabajos = trabajos;
+    //tengo que añadire el listener que he creado en el adapter, porque antes solo tenia el listado de jobs:
+    public JobAdapter(List<Job> jobs, OnJobClickListener listener) {
+        this.jobs = jobs;
         this.listener = listener;
     }
 
-    public class TrabajoViewHolder extends RecyclerView.ViewHolder {
-        TextView txtId, txtEstado, txtMatricula, txtDni;
+    public class JobViewHolder extends RecyclerView.ViewHolder {
+        TextView txtId, txtStatus, txtLicensePlate, txtDni;
 
-        public TrabajoViewHolder(@NonNull View itemView) {
+        public JobViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtId = itemView.findViewById(R.id.txtTrabajoId);
-            txtEstado = itemView.findViewById(R.id.txtEstado);
-            txtMatricula = itemView.findViewById(R.id.txtMatricula);
-            txtDni = itemView.findViewById(R.id.txtDniCliente);
+            txtId = itemView.findViewById(R.id.textViewJobId);
+            txtStatus = itemView.findViewById(R.id.textViewStatus);
+            txtLicensePlate = itemView.findViewById(R.id.textViewLicensePlate);
+            txtDni = itemView.findViewById(R.id.textViewDniCustomer);
 
             /** CARGA UNA ACIVITY. Esto lo hice al principio para que no diera error.
              itemView.setOnClickListener(new View.OnClickListener() {
@@ -47,7 +49,7 @@ public class TrabajoAdapter extends RecyclerView.Adapter<TrabajoAdapter.TrabajoV
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                        Trabajo trabajo = trabajos.get(position);
+                        Job trabajo = jobs.get(position);
                         Intent intent = new Intent(v.getContext(), DetalleTrabajoActivity.class);
                         intent.putExtra("trabajo_id", trabajo.id);
                         v.getContext().startActivity(intent);
@@ -63,7 +65,7 @@ public class TrabajoAdapter extends RecyclerView.Adapter<TrabajoAdapter.TrabajoV
                 public void onClick(View v) {
                     int position = getAdapterPosition();
                     if (position != RecyclerView.NO_POSITION) {
-                    Trabajo trabajo = trabajos.get(position);
+                    Job trabajo = jobs.get(position);
 
                     //crea la instancia del nuevo fragment:
                     JobsNewFragment fragment = new JobsNewFragment();
@@ -84,7 +86,7 @@ public class TrabajoAdapter extends RecyclerView.Adapter<TrabajoAdapter.TrabajoV
             itemView.setOnClickListener(v -> {
                 int position = getAdapterPosition();
                 if (position != RecyclerView.NO_POSITION) {
-                    listener.onModificarTrabajoClick(trabajos.get(position));
+                    listener.onModifyJobClick(jobs.get(position));
                 }
             });
         }
@@ -92,22 +94,22 @@ public class TrabajoAdapter extends RecyclerView.Adapter<TrabajoAdapter.TrabajoV
 
     @NonNull
     @Override
-    public TrabajoViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_trabajo, parent, false);
-        return new TrabajoViewHolder(view);
+    public JobViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_job, parent, false);
+        return new JobViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull TrabajoViewHolder holder, int position) {
-        Trabajo trabajo = trabajos.get(position);
-        holder.txtId.setText("ID: " + trabajo.getId());
-        holder.txtEstado.setText("Estado: " + trabajo.getEstado());
-        holder.txtMatricula.setText("Matrícula: " + trabajo.getVehiculo().getMatricula());
-        holder.txtDni.setText("DNI Cliente: " + trabajo.getVehiculo().getCliente().getDni());
+    public void onBindViewHolder(@NonNull JobViewHolder holder, int position) {
+        Job job = jobs.get(position);
+        holder.txtId.setText("ID: " + job.getId());
+        holder.txtStatus.setText("Estado: " + job.getStatus());
+        holder.txtLicensePlate.setText("Matrícula: " + job.getCar().getLicensePlate());
+        holder.txtDni.setText("DNI Cliente: " + job.getCar().getCustomer().getDni());
     }
 
     @Override
     public int getItemCount() {
-        return trabajos.size();
+        return jobs.size();
     }
 }

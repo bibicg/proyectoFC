@@ -30,8 +30,8 @@ import java.util.Map;
  */
 public class CarNewFragment extends Fragment {
     private RequestQueue queue;
-    private EditText etMatricula, etMarca, etModelo, etAnio;
-    private Button btnGuardar;
+    private EditText etLicensePlate, etBrand, etModel, etYear;
+    private Button btnSave;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
 
@@ -42,28 +42,28 @@ public class CarNewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_car_new, container, false);
 
-        etMatricula = view.findViewById(R.id.editTextMatricula);
-        etMarca = view.findViewById(R.id.editTextMarca);
-        etModelo = view.findViewById(R.id.editTextModelo);
-        btnGuardar = view.findViewById(R.id.guardarVehiculoButton);
-        etAnio = view.findViewById(R.id.editTextAnio);
+        etLicensePlate = view.findViewById(R.id.editTextMatricula);
+        etBrand = view.findViewById(R.id.editTextMarca);
+        etModel = view.findViewById(R.id.editTextModelo);
+        btnSave = view.findViewById(R.id.guardarVehiculoButton);
+        etYear = view.findViewById(R.id.editTextAnio);
 
         queue = Volley.newRequestQueue(requireContext());
 
         /**
-         * El usuario busca el cliente por su dni, pero en supabase la relación entre las tablas
-         * de los vehículos y de los clientes a los que pertenecen, se hace mediante el id del cliente.
+         * El usuario busca el customer por su dni, pero en supabase la relación entre las tablas
+         * de los vehículos y de los clientes a los que pertenecen, se hace mediante el id del customer.
          * QUIZÁS DEBERÍA HABERLO HECHO POR DNI, PORQUE ME ESTÁ DANDO ERRORES!!!!!!!
          */
         //String dni = getArguments() != null ? getArguments().getString("cliente_dni") : null;
         int clienteId = getArguments() != null ? getArguments().getInt("cliente_id", -1) : -1;
 
 
-        btnGuardar.setOnClickListener(v -> {
-            String matricula = etMatricula.getText().toString().trim();
-            String marca = etMarca.getText().toString().trim();
-            String modelo = etModelo.getText().toString().trim();
-            String anioStr = etAnio.getText().toString().trim();
+        btnSave.setOnClickListener(v -> {
+            String matricula = etLicensePlate.getText().toString().trim();
+            String marca = etBrand.getText().toString().trim();
+            String modelo = etModel.getText().toString().trim();
+            String anioStr = etYear.getText().toString().trim();
 
             //convertir el año a int:
             int anio = -1; //valor por defecto, no hay año
@@ -95,22 +95,22 @@ public class CarNewFragment extends Fragment {
     }
 
     //private void guardarVehiculo(String matricula, String marca, String modelo, String dni) {
-    private void saveCar(String matricula, String marca, String modelo, int anio, int clienteId){
+    private void saveCar(String licensePlate, String brand, String model, int year, int customerId){
 
         String url = SUPABASE_URL + "/rest/v1/vehiculos";
 
-        Log.d("SUPABASE", "Guardando vehículo para cliente ID: " + clienteId);
+        Log.d("SUPABASE", "Guardando vehículo para customer ID: " + customerId);
 
         JSONObject vehiculoJson = new JSONObject();
         try {
-            vehiculoJson.put("matricula", matricula);
-            vehiculoJson.put("marca", marca);
-            vehiculoJson.put("modelo", modelo);
+            vehiculoJson.put("matricula", licensePlate);
+            vehiculoJson.put("marca", brand);
+            vehiculoJson.put("modelo", model);
             //vehiculoJson.put("cliente_dni", dni); // No está usando el dni realmente
-            vehiculoJson.put("cliente_id", clienteId); // por eso cambio al id, que es lo que se usa
+            vehiculoJson.put("cliente_id", customerId); // por eso cambio al id, que es lo que se usa
 
-            if (anio != -1) { //solo se incluye el año si existe
-                vehiculoJson.put("anio", anio);
+            if (year != -1) { //solo se incluye el año si existe
+                vehiculoJson.put("anio", year);
             }
 
         } catch (JSONException e) {

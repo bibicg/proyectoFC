@@ -18,14 +18,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- botón para buscar un trabajo: CON MATERIAL DESIGN 3 -->
+        <!-- botón para buscar un job: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBuscarTrabajo"
+            android:id="@+id/searchJobButton"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Buscar trabajo"
+            android:text="@string/button_search_job"
             android:textColor="@color/black"
             app:icon="@drawable/settings_b_roll_32_negro"
             app:iconSize="32dp"
@@ -40,14 +40,14 @@
             android:gravity="center"
             android:background="@drawable/tab_button_selector" />
 
-        <!-- botón para añadir un trabajo: CON MATERIAL DESIGN 3 -->
+        <!-- botón para añadir un job: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnNuevoTrabajo"
+            android:id="@+id/newJobButton"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nuevo trabajo"
+            android:text="@string/button_new_job"
             android:textColor="@color/black"
             app:icon="@drawable/settings_account_box_32_negro"
             app:iconSize="32dp"
