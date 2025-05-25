@@ -23,11 +23,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Descripción"
+                android:hint="@string/hint_job_description"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewDescrippcion"
+                android:id="@+id/textViewDescription"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -35,11 +35,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fecha inicio"
+                android:hint="@string/hint_start_date"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewFechaInicio"
+                android:id="@+id/textViewStartDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -47,11 +47,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fecha fin"
+                android:hint="@string/hint_end_date"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewFechaFin"
+                android:id="@+id/textViewEndDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -59,11 +59,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Estado"
+                android:hint="@string/hint_status"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewEstado"
+                android:id="@+id/textViewStatus"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -71,11 +71,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Comentarios"
+                android:hint="@string/hint_comments"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewComentarios"
+                android:id="@+id/textViewComments"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -83,11 +83,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Matrícula"
+                android:hint="@string/hint_license_plate"
                 android:textStyle="bold" />
 
             <TextView
-                android:id="@+id/textViewMatricula"
+                android:id="@+id/textViewLicensePlate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingBottom="8dp" />
@@ -95,7 +95,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="DNI Cliente"
+                android:hint="@string/hint_dni"
                 android:textStyle="bold" />
 
             <TextView
@@ -105,7 +105,7 @@
                 android:paddingBottom="8dp" />
 
             <ImageView
-                android:id="@+id/imageViewTrabajo"
+                android:id="@+id/imageViewJob"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
@@ -114,17 +114,17 @@
                 android:background="#e0e0e0" />
 
             <Button
-                android:id="@+id/editarTrabajoButton"
+                android:id="@+id/modifyJobButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Modificar job"
+                android:text="@string/button_modify_job"
                 android:layout_marginTop="16dp" />
 
             <Button
-                android:id="@+id/eliminarTrabajoButton"
+                android:id="@+id/deleteJobButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eliminar job"
+                android:text="@string/button_delete_job"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@android:color/holo_red_dark"
                 android:textColor="@android:color/white" />

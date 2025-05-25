@@ -22,7 +22,6 @@ import androidx.fragment.app.FragmentManager;
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
@@ -39,36 +38,36 @@ import java.util.Map;
 public class JobsDetailFragment extends Fragment {
     private RequestQueue queue;
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
-    private TextView tvDescripcion, tvFechaInicio, tvFechaFin, tvEstado, tvComentarios, tvMatricula, tvDniCliente;
-    private ImageView ivTrabajo;
-    private Button btnEditar, btnEliminar;
+    private TextView tvDescription, tvStartDate, tvEndDate, tvStatus, tvComments, tvLicensePlate, tvDniCustomer;
+    private ImageView ivJob;
+    private Button btnUpdate, btnDelete;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_jobs_detail, container, false);
 
-        tvDescripcion = view.findViewById(R.id.textViewDescrippcion);
-        tvFechaInicio = view.findViewById(R.id.textViewFechaInicio);
-        tvFechaFin = view.findViewById(R.id.textViewFechaFin);
-        tvEstado = view.findViewById(R.id.textViewEstado);
-        tvComentarios = view.findViewById(R.id.textViewComentarios);
-        tvMatricula = view.findViewById(R.id.textViewMatricula);
-        tvDniCliente = view.findViewById(R.id.textViewDni);
-        ivTrabajo = view.findViewById(R.id.imageViewTrabajo);
-        btnEditar = view.findViewById(R.id.editarTrabajoButton);
-        btnEliminar = view.findViewById(R.id.eliminarTrabajoButton);
+        tvDescription = view.findViewById(R.id.textViewDescription);
+        tvStartDate = view.findViewById(R.id.textViewStartDate);
+        tvEndDate = view.findViewById(R.id.textViewEndDate);
+        tvStatus = view.findViewById(R.id.textViewStatus);
+        tvComments = view.findViewById(R.id.textViewComments);
+        tvLicensePlate = view.findViewById(R.id.textViewLicensePlate);
+        tvDniCustomer = view.findViewById(R.id.textViewDni);
+        ivJob = view.findViewById(R.id.imageViewJob);
+        btnUpdate = view.findViewById(R.id.modifyJobButton);
+        btnDelete = view.findViewById(R.id.deleteJobButton);
 
         queue = Volley.newRequestQueue(getContext());
 
         Bundle args = getArguments();
         if (args != null) {
-            tvDescripcion.setText(args.getString("descripcion", ""));
-            tvFechaInicio.setText(args.getString("fecha_inicio", ""));
-            tvFechaFin.setText(args.getString("fecha_fin", ""));
-            tvEstado.setText(args.getString("estado", ""));
-            tvComentarios.setText(args.getString("comentarios", ""));
-            tvMatricula.setText(args.getString("matricula", ""));
-            tvDniCliente.setText(args.getString("dni_cliente", ""));
+            tvDescription.setText(args.getString("descripcion", ""));
+            tvStartDate.setText(args.getString("fecha_inicio", ""));
+            tvEndDate.setText(args.getString("fecha_fin", ""));
+            tvStatus.setText(args.getString("estado", ""));
+            tvComments.setText(args.getString("comentarios", ""));
+            tvLicensePlate.setText(args.getString("matricula", ""));
+            tvDniCustomer.setText(args.getString("dni_cliente", ""));
 
             //Para asegurar que la img se vea tanto si la hay como si no:
             String base64Image = args.getString("imagen", null);
@@ -82,16 +81,16 @@ public class JobsDetailFragment extends Fragment {
                     byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
                     if (bitmap != null) {
-                        ivTrabajo.setImageBitmap(bitmap);
+                        ivJob.setImageBitmap(bitmap);
                     } else {
-                        ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                        ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
                     }
                 } catch (IllegalArgumentException e) {
                     Log.e("IMAGEN", "Base64 malformado: " + e.getMessage());
-                    ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                    ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
                 }
             } else {
-                ivTrabajo.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
             }
 
 
@@ -100,7 +99,7 @@ public class JobsDetailFragment extends Fragment {
              * EN LOS CAMPOS CORRESPONDIENTES. DESDE AHÍ SERÁ DESDE DONDE SE PERMITA EDITAR EL TRABAJO Y ENVIAR
              * EL RESULTADO DE DICHA EDICIÓN A SUPABASE A TRAVÉS DE UN PATCH.
              */
-            btnEditar.setOnClickListener(v -> {
+            btnUpdate.setOnClickListener(v -> {
                 JobsNewFragment editFragment = new JobsNewFragment();
                 editFragment.setArguments(args);
                 requireActivity().getSupportFragmentManager()
@@ -114,7 +113,7 @@ public class JobsDetailFragment extends Fragment {
             /**
              * ESTE BOTÓN ABRE UNA CONFIRMACIÓN PARA ELIMINAR EL TRABAJO
              */
-            btnEliminar.setOnClickListener(v ->
+            btnDelete.setOnClickListener(v ->
                     showConfirmationDelete(args.getString("trabajo_id")));
         }
 

@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
             Fragment selectedFragment = null;
             int itemId = item.getItemId();
 
-            if (itemId == R.id.nav_clients) { // -> Clientes
+            if (itemId == R.id.nav_customers) { // -> Clientes
                 selectedFragment = new CustomersFragment();
             } else if (itemId == R.id.nav_jobs) { // -> Trabajos
                 selectedFragment = new JobsFragment();
@@ -82,13 +82,13 @@ public class MainActivity extends AppCompatActivity {
          * del trabajo en el mismo formulario, pero sin los botones buscar y nuevo del JobsFragment:
          */
         if (savedInstanceState == null) {
-            int trabajoId = getIntent().getIntExtra("trabajo_id", -1);
+            int jobId = getIntent().getIntExtra("trabajo_id", -1);
 
             Fragment defaultFragment;
-            if (trabajoId != -1) {
+            if (jobId != -1) {
                 JobsNewFragment fragment = new JobsNewFragment();
                 Bundle args = new Bundle();
-                args.putInt("trabajo_id", trabajoId);
+                args.putInt("trabajo_id", jobId);
                 fragment.setArguments(args);
                 defaultFragment = fragment;
             } else {
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, defaultFragment)
                     .commit();
-            if (trabajoId == -1) {
+            if (jobId == -1) {
                 navigationView.setCheckedItem(R.id.nav_profile);
             }
         }

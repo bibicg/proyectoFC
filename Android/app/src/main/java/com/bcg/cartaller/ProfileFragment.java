@@ -42,15 +42,15 @@ import java.util.Map;
 
 // ProfileFragment.java actualizado con headers y control RLS (hay que activarlas en supabase)
 public class ProfileFragment extends Fragment {
-    private RecyclerView recyclerTrabajos;
+    private RecyclerView recyclerJobs;
     private JobAdapter adapter;
     private RequestQueue queue;
     //Añado las url a una variable para no tener que estar copiando todo el codigo contantemente:
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     //atributos de clase para mostrar datos del mecánico logueado:
-    private TextView tvNombreUsuario;
-    private TextView tvCargoUsuario;
+    private TextView tvUserName;
+    private TextView tvUserStatus;
     private List<Job> jobs = new ArrayList<>();
 
 
@@ -59,11 +59,11 @@ public class ProfileFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_profile, container, false);
 
-        tvNombreUsuario = view.findViewById(R.id.userName);
-        tvCargoUsuario = view.findViewById(R.id.userUsername);
+        tvUserName = view.findViewById(R.id.userName);
+        tvUserStatus = view.findViewById(R.id.userUsername);
 
-        recyclerTrabajos = view.findViewById(R.id.recyclerTrabajos);
-        recyclerTrabajos.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerJobs = view.findViewById(R.id.recyclerJobs);
+        recyclerJobs.setLayoutManager(new LinearLayoutManager(getContext()));
 
         adapter = new JobAdapter(jobs, job -> {
             JobsDetailFragment fragment = new JobsDetailFragment();
@@ -87,7 +87,7 @@ public class ProfileFragment extends Fragment {
                     .commit();
         });
 
-        recyclerTrabajos.setAdapter(adapter);
+        recyclerJobs.setAdapter(adapter);
 
         queue = Volley.newRequestQueue(getContext());
         showActiveJobs();
@@ -140,7 +140,7 @@ public class ProfileFragment extends Fragment {
                         Log.d("SUPABASE", "Cantidad de jobs: " + response.length());
 
                         if (response.length() == 0) {
-                            Toast.makeText(getContext(), "No hay jobs activos asignados.", Toast.LENGTH_LONG).show();
+                            Toast.makeText(getContext(), "No hay trabajos activos asignados.", Toast.LENGTH_LONG).show();
                         } else {
                             for (int i = 0; i < response.length(); i++) {
                                 JSONObject trabajoJson = response.getJSONObject(i);
@@ -196,8 +196,7 @@ public class ProfileFragment extends Fragment {
                                         .commit();
                             });
 
-
-                            recyclerTrabajos.setAdapter(adapter);
+                            recyclerJobs.setAdapter(adapter);
                         }
                     } catch (JSONException e) {
                         Toast.makeText(getContext(), "Error al procesar datos", Toast.LENGTH_SHORT).show();
@@ -249,13 +248,13 @@ public class ProfileFragment extends Fragment {
                 response -> {
                     try {
                         if (response.length() > 0) {
-                            JSONObject mecanico = response.getJSONObject(0);
-                            String nombre = mecanico.getString("nombre");
-                            String apellidos = mecanico.getString("apellidos");
-                            String cargo = mecanico.optString("cargo", "Sin cargo");
+                            JSONObject mechanic = response.getJSONObject(0);
+                            String name = mechanic.getString("nombre");
+                            String surname = mechanic.getString("apellidos");
+                            String status = mechanic.optString("cargo", "Sin cargo");
 
-                            tvNombreUsuario.setText(nombre + " " + apellidos);
-                            tvCargoUsuario.setText(cargo != null ? cargo : "Sin cargo");
+                            tvUserName.setText(name + " " + surname);
+                            tvUserStatus.setText(status != null ? status : "Sin cargo");
                         } else {
                             Toast.makeText(getContext(), "Datos del usuario no encontrados", Toast.LENGTH_SHORT).show();
                         }

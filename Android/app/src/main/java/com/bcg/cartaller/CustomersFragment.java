@@ -21,15 +21,15 @@ public class CustomersFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_clients, container, false);
+        View view = inflater.inflate(R.layout.fragment_customers, container, false);
 
         // Botones para buscar clientes y para añadir un nuevo customer
-        Button btnBuscar = view.findViewById(R.id.btnBuscarCliente);
-        Button btnNuevo = view.findViewById(R.id.btnNuevoCliente);
+        Button btnBuscar = view.findViewById(R.id.btnSearchCustomer);
+        Button btnNuevo = view.findViewById(R.id.btnNewCustomer);
 
         // Este es el contenedor donde se van a cargar los fragments (search y new)
         getChildFragmentManager().beginTransaction()
-                .replace(R.id.clientsGeneralContainer, new CustomersSearchFragment())
+                .replace(R.id.customersGeneralContainer, new CustomersSearchFragment())
                 .commit();
 
         // Según se clique un botón u otro, se cargará el fragmento correspondiente en el contenedor
@@ -45,11 +45,11 @@ public class CustomersFragment extends Fragment {
         btnBuscar.setOnClickListener(v -> {
             CustomersSearchFragment fragment = new CustomersSearchFragment();
             getChildFragmentManager().beginTransaction()
-                    .replace(R.id.clientsGeneralContainer, fragment)
+                    .replace(R.id.customersGeneralContainer, fragment)
                     .commit();
 
             new Handler().postDelayed(() -> {
-                Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.clientsGeneralContainer);
+                Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.customersGeneralContainer);
                 if (currentFragment instanceof CustomersSearchFragment) {
                     ((CustomersSearchFragment) currentFragment).showSearchDialog();
                 }
@@ -59,7 +59,7 @@ public class CustomersFragment extends Fragment {
 
         btnNuevo.setOnClickListener(v -> {
             getChildFragmentManager().beginTransaction()
-                    .replace(R.id.clientsGeneralContainer, new CustomersNewFragment())
+                    .replace(R.id.customersGeneralContainer, new CustomersNewFragment())
                     .commit();
         });
 

@@ -20,12 +20,12 @@
 
         <!-- botón para buscar un customer: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnBuscarCliente"
+            android:id="@+id/btnSearchCustomer"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Buscar cliente"
+            android:text="@string/button_search_customer"
             android:textColor="@color/black"
             app:icon="@drawable/person_search_32_negro"
             app:iconSize="32dp"
@@ -42,12 +42,12 @@
 
         <!-- botón para añadir un customer: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnNuevoCliente"
+            android:id="@+id/btnNewCustomer"
             style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Nuevo cliente"
+            android:text="@string/button_new_customer"
             android:textColor="@color/black"
             app:icon="@drawable/person_add_32_negro"
             app:iconSize="32dp"
@@ -80,7 +80,7 @@
         <!-- contenedor para mostrar el contenido del click de ambos botones -->
         <!--se mostrará dentro de él un fragment u otro (CustomersNewFragment o CustomersSearchFragment) -->
         <FrameLayout
-            android:id="@+id/clientsGeneralContainer"
+            android:id="@+id/customersGeneralContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="16dp" />

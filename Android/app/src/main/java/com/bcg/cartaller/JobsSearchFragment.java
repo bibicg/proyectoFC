@@ -67,7 +67,7 @@ public class JobsSearchFragment extends Fragment {
 
 
         //Recicler view (el mismo que usé en Profile Fragment) para cargar los jobs:
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerTrabajos);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerJobs);
         //adapter = new JobAdapter(jobs); //este era antes de poder pasar la info al formulario para modificar
         adapter = new JobAdapter(jobs, new JobAdapter.OnJobClickListener() {
             @Override
@@ -115,31 +115,33 @@ public class JobsSearchFragment extends Fragment {
         return view;
     }
 
+    //mostrarDialogBusqueda
     //Este metodo es el que muestra el dialog y permite elegir la opción de busqueda:
    //Lopodría hacer como el de newFragment de las tareas, que es de opción múltiple
-    public void mostrarDialogBusqueda() {
-        CharSequence[] opciones = {"Por estado", "Por DNI", "Por matrícula"};
+    public void showSearchDialog() {
+        CharSequence[] options = {"Por estado", "Por DNI", "Por matrícula"};
 
         new AlertDialog.Builder(getContext())
                 .setTitle("Filtro de búsqueda:")
-                .setItems(opciones, (dialog, which) -> {
+                .setItems(options, (dialog, which) -> {
                     switch (which) {
-                        case 0: buscarPorEstado(); break;
-                        case 1: buscarPorDni(); break;
-                        case 2: buscarPorMatricula(); break;
+                        case 0: searchByStatus(); break;
+                        case 1: searchByDni(); break;
+                        case 2: searchByLicensePlate(); break;
                     }
                 }).show();
     }
 
+    //buscarPorEstado
     //Las 3 opciones dentro del DIALOG: que son las busquedas por los 3 estados existentes en la tabla: PENDIENTE - EN CURSO - ACABADO
-    private void buscarPorEstado() {
+    private void searchByStatus() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Selecciona estado:")
                 .setItems(new CharSequence[]{"Pendiente", "En curso", "Acabado"}, (dialog, which) -> {
                     switch (which) {
-                        case 0: mostrarTrabajosSegunFiltro("pendiente", null, null); break;
-                        case 1: mostrarTrabajosSegunFiltro("en curso", null, null); break;
-                        case 2: mostrarTrabajosSegunFiltro("acabado", null, null); break;
+                        case 0: showJobsByFilter("pendiente", null, null); break;
+                        case 1: showJobsByFilter("en curso", null, null); break;
+                        case 2: showJobsByFilter("acabado", null, null); break;
                     }
                 }).show();
     }
@@ -177,24 +179,24 @@ public class JobsSearchFragment extends Fragment {
     //Para matricula y DNI creo un dialog personalizado (como en la práctica de Cocktails).
     //No uso el metodo showDialog para los elementos del xml porque son distintos campos.
     //si me da tiempo modifico la estetica en paso final:
-    private void buscarPorDni() {
+    private void searchByDni() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
         titleDialog.setText("Buscar por DNI");
-        inputField.setHint("Introduce el DNI del customer");
+        inputField.setHint("Introduce el DNI del cliente");
 
         new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String dni = inputField.getText().toString();
-                    if (!dni.isEmpty()) mostrarTrabajosSegunFiltro(null, dni, null);
+                    if (!dni.isEmpty()) showJobsByFilter(null, dni, null);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    private void buscarPorMatricula() {
+    private void searchByLicensePlate() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
@@ -204,8 +206,8 @@ public class JobsSearchFragment extends Fragment {
         new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
-                    String matricula = inputField.getText().toString();
-                    if (!matricula.isEmpty()) mostrarTrabajosSegunFiltro(null, null, matricula);
+                    String licensePlate = inputField.getText().toString();
+                    if (!licensePlate.isEmpty()) showJobsByFilter(null, null, licensePlate);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -215,7 +217,7 @@ public class JobsSearchFragment extends Fragment {
      * Funcion generica para hacer la busqueda, dentro de ella hay un if, y dependiendo de
      * por donde entra, buscará por un campo opor otro
      */
-    private void mostrarTrabajosSegunFiltro(String estado, String dniCliente, String matriculaVehiculo) {
+    private void showJobsByFilter(String estado, String dniCliente, String matriculaVehiculo) {
         //primero se recupera el id del mecanico a traves de SP:
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
         String mecanicoId = prefs.getString("mecanico_id", null);
@@ -232,20 +234,20 @@ public class JobsSearchFragment extends Fragment {
 
 
         // Filtros dinámicos
-        List<String> filtros = new ArrayList<>();
-        filtros.add("mecanico_id=eq." + mecanicoId);
+        List<String> filter = new ArrayList<>();
+        filter.add("mecanico_id=eq." + mecanicoId);
 
         if (estado != null && !estado.equals("todos")) {
-            filtros.add("estado=eq." + estado);
+            filter.add("estado=eq." + estado);
         }
         if (dniCliente != null && !dniCliente.isEmpty()) {
-            filtros.add("vehiculos.clientes.dni=eq." + dniCliente);
+            filter.add("vehiculos.clientes.dni=eq." + dniCliente);
         }
         if (matriculaVehiculo != null && !matriculaVehiculo.isEmpty()) {
-            filtros.add("vehiculos.matricula=eq." + matriculaVehiculo);
+            filter.add("vehiculos.matricula=eq." + matriculaVehiculo);
         }
 
-        String url = baseUrl + "&" + TextUtils.join("&", filtros);
+        String url = baseUrl + "&" + TextUtils.join("&", filter);
 
         Log.d("Trabajos", "Cargando jobs con: estado=" + estado + ", dni=" + dniCliente + ", matricula=" + matriculaVehiculo + ", mecanicoId=" + mecanicoId);
 

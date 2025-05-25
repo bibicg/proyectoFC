@@ -38,10 +38,10 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
 
         public JobViewHolder(@NonNull View itemView) {
             super(itemView);
-            txtId = itemView.findViewById(R.id.txtTrabajoId);
-            txtStatus = itemView.findViewById(R.id.txtEstado);
-            txtLicensePlate = itemView.findViewById(R.id.txtMatricula);
-            txtDni = itemView.findViewById(R.id.txtDniCliente);
+            txtId = itemView.findViewById(R.id.textViewJobId);
+            txtStatus = itemView.findViewById(R.id.textViewStatus);
+            txtLicensePlate = itemView.findViewById(R.id.textViewLicensePlate);
+            txtDni = itemView.findViewById(R.id.textViewDniCustomer);
 
             /** CARGA UNA ACIVITY. Esto lo hice al principio para que no diera error.
              itemView.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +95,7 @@ public class JobAdapter extends RecyclerView.Adapter<JobAdapter.JobViewHolder> {
     @NonNull
     @Override
     public JobViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_trabajo, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_job, parent, false);
         return new JobViewHolder(view);
     }
 

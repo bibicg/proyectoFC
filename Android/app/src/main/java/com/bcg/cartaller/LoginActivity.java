@@ -260,7 +260,7 @@ public class LoginActivity extends AppCompatActivity {
 
                         // llamada a metodo
                         Log.d("LOGIN", "Llamando a obtenerMecanicoPorEmail con token: " + accessToken + " y email: " + email);
-                        obtenerMecanicoPorEmail(accessToken, email);
+                        getMecanicoByEmail(accessToken, email);
 
 
                     } catch (JSONException e) {
@@ -293,8 +293,9 @@ public class LoginActivity extends AppCompatActivity {
         queue.add(request);
     }
 
+    //obtenerMecanicoPorEmail
     //Este metodo es usado por loginUser:
-    private void obtenerMecanicoPorEmail(String token, String email) {
+    private void getMecanicoByEmail(String token, String email) {
         String url = SUPABASE_URL + "/rest/v1/mecanicos?select=id&email=eq." + Uri.encode(email);
         Log.d("OBTENER_MECANICO", "URL para obtener mecánico: " + url);
         Log.d("OBTENER_MECANICO", "Token usado: " + token);

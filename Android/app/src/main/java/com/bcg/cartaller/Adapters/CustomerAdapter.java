@@ -84,7 +84,7 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
     @NonNull
     @Override
     public CustomerViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_cliente, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_customer, parent, false);
         return new CustomerViewHolder(view);
     }
     //vincula los datos del customer al viewholder:

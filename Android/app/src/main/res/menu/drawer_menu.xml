@@ -3,14 +3,14 @@
 
     <group android:checkableBehavior="single">
         <item
-            android:id="@+id/nav_clients"
-            android:title="Clientes"
+            android:id="@+id/nav_customers"
+            android:title="@string/nav_customers"
             android:icon="@drawable/clientes"
             android:checkable="true"
             app:showAsAction="never" />
         <item
             android:id="@+id/nav_jobs"
-            android:title="Trabajos"
+            android:title="@string/nav_jobs"
             android:icon="@drawable/trabajos"
             android:checkable="true"
             app:showAsAction="never" />
@@ -18,7 +18,7 @@
 
         <item
             android:id="@+id/nav_profile"
-            android:title="Perfil"
+            android:title="@string/nav_profile"
             android:icon="@drawable/perfil"
             android:checkable="true"
             app:showAsAction="never" />
@@ -26,7 +26,7 @@
 
     <item
         android:id="@+id/nav_logout"
-        android:title="Cerrar Sesión"
+        android:title="@string/nav_logout"
         android:icon="@drawable/cerrar_sesion"
         app:showAsAction="never" />
 </menu>

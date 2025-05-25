@@ -1,20 +1,90 @@
 <resources>
     <string name="app_name">CarTaller</string>
 
-    <!--Profile View-->
+    <!--drawer menu-->
+    <string name="nav_customers">Clientes</string>
+    <string name="nav_jobs">Trabajos</string>
+    <string name="nav_profile">Perfil</string>
+    <string name="nav_logout">Cerrar sesión</string>
+
+
+    <!--Profile-->
     <string name="profile_title">Perfil</string>
     <string name="user_username">USERNAME</string>
     <string name="view_details">Ver detalles</string>
     <string name="open_drawer">Abrir</string>
     <string name="close_drawer">Cerrar</string>
+    <string name="welcome_title">¡Bienvenido/a!</string>
+    <string name="user_full_name">Nombre Apellido</string>
+    <string name="user_position">Cargo / Usuario</string>
+    <string name="button_see_more">Ver más</string>
+    <string name="active_jobs_title">Trabajos activos asignados</string>
 
-    <!--Para los textos como @string -->
+    <!--CUSTOMER -->
     <string name="label_dni_placeholder">DNI: ---</string>
     <string name="label_name_placeholder">Nombre: ---</string>
     <string name="label_phone_placeholder">Teléfono: ---</string>
     <string name="label_cars_placeholder">Vehículos: 0</string>
-
     <string name="button_edit_customer">Editar cliente</string>
     <string name="button_add_car">Añadir vehículo</string>
+
+    <!--fragment customer new -->
+    <string name="hint_name">Nombre</string>
+    <string name="hint_surname">Apellidos</string>
+    <string name="hint_dni">DNI</string>
+    <string name="hint_phone">Teléfono</string>
+    <string name="hint_email">Email</string>
+    <string name="hint_address">Dirección</string>
+
+    <string name="button_save_customer">Guardar Cliente</string>
+    <string name="button_modify_customer">Guardar Modificaciones</string>
+
+
+    <!--fragment customer-->
+    <string name="button_search_customer">Buscar cliente</string>
+    <string name="button_new_customer">Nuevo cliente</string>
+
+    <!--item-job: Adapter de trabajos -->
+    <string name="label_job_id">Trabajo ID: ---</string>
+    <string name="label_status">Estado: En proceso</string>
+    <string name="label_license_plate">Matrícula: ABC123</string>
+    <string name="label_customer_dni">Cliente DNI: 12345678Z</string>
+
+    <!--fragment jobs new -->
+    <string name="hint_license_plate">Matrícula del vehículo</string>
+    <string name="hint_job_description">Descripción del trabajo</string>
+    <string name="button_select_start_date">Seleccionar Fecha</string>
+    <string name="hint_start_date">Fecha de inicio</string>
+    <string name="button_select_end_date">Fecha fin</string>
+    <string name="hint_end_date">Fecha de finalización</string>
+    <string name="hint_status">Estado</string>
+    <string name="hint_comments">Comentarios del mecánico</string>
+    <string name="button_upload_image">Subir Imagen</string>
+    <string name="label_tasks">Tareas:</string>
+    <string name="button_add_task">Añadir Tarea</string>
+    <string name="button_save_job">Guardar Trabajo</string>
+    <string name="button_modify_job">Guardar modificaciones</string>
+    <string name="label_car_info">Información del vehículo</string>
+
+    <!--fragment job detail -->
+    <string name="label_description">Descripción</string>
+    <string name="label_start_date">Fecha inicio</string>
+    <string name="label_end_date">Fecha fin</string>
+
+    <string name="label_comments">Comentarios</string>
+
+
+    <string name="button_edit_job">Modificar trabajo</string>
+    <string name="button_delete_job">Eliminar trabajo</string>
+
+    <string name="button_search_job">Buscar trabajo</string>
+    <string name="button_new_job">Nuevo trabajo</string>
+
+
+    <string name="label_status_detail">Estado</string>
+    <string name="label_license_plate_detail">Matrícula</string>
+    <string name="label_customer_dni_detail">DNI Cliente</string>
+
+
 
 </resources>

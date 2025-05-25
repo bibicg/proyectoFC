@@ -46,12 +46,12 @@ public class CustomersSearchFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_clients_search, container, false);
+        View view = inflater.inflate(R.layout.fragment_customers_search, container, false);
 
         queue = Volley.newRequestQueue(requireContext());
 
         //Recicler view (el mismo que usé en Profile Fragment) para cargar los trabajos:
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerClientes);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerCustomers);
         adapter = new CustomerAdapter(customers, new CustomerAdapter.OnCustomerClickListener() {
             @Override
             public void onDetailCustomerClick(Customer customer) {
@@ -62,7 +62,7 @@ public class CustomersSearchFragment extends Fragment {
                 fragment.setArguments(args);
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.clientsGeneralContainer, fragment)
+                        .replace(R.id.customersGeneralContainer, fragment)
                         .addToBackStack(null)
                         .commit();
             }
@@ -76,7 +76,7 @@ public class CustomersSearchFragment extends Fragment {
                 fragment.setArguments(args);
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.clientsGeneralContainer, fragment)
+                        .replace(R.id.customersGeneralContainer, fragment)
                         .addToBackStack(null)
                         .commit();
             }
@@ -96,7 +96,7 @@ public class CustomersSearchFragment extends Fragment {
 
                 getParentFragmentManager()
                         .beginTransaction()
-                        .replace(R.id.clientsGeneralContainer, fragment)
+                        .replace(R.id.customersGeneralContainer, fragment)
                         .addToBackStack(null)
                         .commit();
             }
