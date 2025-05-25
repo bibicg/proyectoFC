@@ -22,10 +22,10 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.Volley;
-import com.bcg.cartaller.Adapters.TrabajoAdapter;
-import com.bcg.cartaller.Models.Cliente;
-import com.bcg.cartaller.Models.Trabajo;
-import com.bcg.cartaller.Models.Vehiculo;
+import com.bcg.cartaller.Adapters.JobAdapter;
+import com.bcg.cartaller.Models.Customer;
+import com.bcg.cartaller.Models.Job;
+import com.bcg.cartaller.Models.Car;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -34,21 +34,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Desde este fragment el mecánico podrá buscar trabajos, bien por estado del trabajo,
- * la matrícula del vehículo implicado en el trabajo o el dni del cliente.
+ * Desde este fragment el mecánico podrá buscar jobs, bien por estado del trabajo,
+ * la matrícula del vehículo implicado en el trabajo o el dni del customer.
  * Busquedas(son tipo.  sql):
- * TODOS LOS TRABAJOS: GET /trabajos?select=*,vehiculos(*,clientes(*))&mecanico_id
- * TRABAJOS POR ESTADO: GET /trabajos?select=*,vehiculos(*,clientes(*))&estado=eq.pendiente&mecanico_id
- * TRABAJOS POR MATRICULA: GET /trabajos?select=*,vehiculos(*,clientes(*))&vehiculos.matricula
- * TRABAJOS POR CLIENTE: como el cliente no está directamente en la tabla trabajos, sino que se llega a él
+ * TODOS LOS TRABAJOS: GET /jobs?select=*,vehiculos(*,clientes(*))&mecanico_id
+ * TRABAJOS POR ESTADO: GET /jobs?select=*,vehiculos(*,clientes(*))&estado=eq.pendiente&mecanico_id
+ * TRABAJOS POR MATRICULA: GET /jobs?select=*,vehiculos(*,clientes(*))&vehiculos.matricula
+ * TRABAJOS POR CLIENTE: como el customer no está directamente en la tabla jobs, sino que se llega a él
  * a través de la matri. del vehículo, lo mejor es hacer una view en supabase, que es como una "consulta" pre-guardada
  */
 public class JobsSearchFragment extends Fragment {
     private RequestQueue queue;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
-    private List<Trabajo> trabajos = new ArrayList<>();
-    private TrabajoAdapter adapter;
+    private List<Job> jobs = new ArrayList<>();
+    private JobAdapter adapter;
 
     public JobsSearchFragment() {}
 
@@ -66,26 +66,26 @@ public class JobsSearchFragment extends Fragment {
         queue = Volley.newRequestQueue(requireContext());
 
 
-        //Recicler view (el mismo que usé en Profile Fragment) para cargar los trabajos:
+        //Recicler view (el mismo que usé en Profile Fragment) para cargar los jobs:
         RecyclerView recyclerView = view.findViewById(R.id.recyclerTrabajos);
-        //adapter = new TrabajoAdapter(trabajos); //este era antes de poder pasar la info al formulario para modificar
-        adapter = new TrabajoAdapter(trabajos, new TrabajoAdapter.OnTrabajoClickListener() {
+        //adapter = new JobAdapter(jobs); //este era antes de poder pasar la info al formulario para modificar
+        adapter = new JobAdapter(jobs, new JobAdapter.OnJobClickListener() {
             @Override
-            public void onModificarTrabajoClick(Trabajo trabajo) {
+            public void onModifyJobClick(Job job) {
                 //JobsNewFragment fragment = new JobsNewFragment();
                 JobsDetailFragment fragment = new JobsDetailFragment();
 
                 Bundle bundle = new Bundle();
-                bundle.putString("trabajo_id", trabajo.getId());
-                bundle.putString("estado", trabajo.getEstado());
-                bundle.putString("descripcion", trabajo.getDescripcion());
-                bundle.putString("fecha_inicio", trabajo.getFecha_inicio());
-                bundle.putString("fecha_fin", trabajo.getFecha_fin());
-                bundle.putString("comentarios", trabajo.getComentarios());
-                bundle.putString("imagen", trabajo.getImagen());
-                bundle.putString("matricula", trabajo.getVehiculo().getMatricula());
-                bundle.putString("dni_cliente", trabajo.getVehiculo().getCliente().getDni());
-                bundle.putString("mecanico_id", trabajo.getMecanico_id());
+                bundle.putString("trabajo_id", job.getId());
+                bundle.putString("estado", job.getStatus());
+                bundle.putString("descripcion", job.getDescription());
+                bundle.putString("fecha_inicio", job.getStartDate());
+                bundle.putString("fecha_fin", job.getEndDate());
+                bundle.putString("comentarios", job.getComment());
+                bundle.putString("imagen", job.getImage());
+                bundle.putString("matricula", job.getCar().getLicensePlate());
+                bundle.putString("dni_cliente", job.getCar().getCustomer().getDni());
+                bundle.putString("mecanico_id", job.getMechanicId());
 
                 fragment.setArguments(bundle);
 
@@ -182,7 +182,7 @@ public class JobsSearchFragment extends Fragment {
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
         titleDialog.setText("Buscar por DNI");
-        inputField.setHint("Introduce el DNI del cliente");
+        inputField.setHint("Introduce el DNI del customer");
 
         new AlertDialog.Builder(getContext())
                 .setView(dialogView)
@@ -247,16 +247,16 @@ public class JobsSearchFragment extends Fragment {
 
         String url = baseUrl + "&" + TextUtils.join("&", filtros);
 
-        Log.d("Trabajos", "Cargando trabajos con: estado=" + estado + ", dni=" + dniCliente + ", matricula=" + matriculaVehiculo + ", mecanicoId=" + mecanicoId);
+        Log.d("Trabajos", "Cargando jobs con: estado=" + estado + ", dni=" + dniCliente + ", matricula=" + matriculaVehiculo + ", mecanicoId=" + mecanicoId);
 
         JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
-                    trabajos.clear();
+                    jobs.clear();
                     if (response.length() == 0) {
-                        String mensaje = "No se encontraron trabajos";
+                        String mensaje = "No se encontraron jobs";
                         if (estado != null && !estado.equals("todos")) {
                             mensaje += " con estado '" + estado + "'";
                         } else if (dniCliente != null && !dniCliente.isEmpty()) {
@@ -274,35 +274,35 @@ public class JobsSearchFragment extends Fragment {
 
                                 Log.d("JSON_DEBUG", "clienteJson = " + clienteJson.toString());
 
-                                Cliente cliente = new Cliente(clienteJson.getString("dni"));
-                                /**Cliente cliente = new Cliente(
+                                Customer customer = new Customer(clienteJson.getString("dni"));
+                                /**Customer customer = new Customer(
                                         clienteJson.optInt("id", -1),
                                         clienteJson.optString("dni", "")
                                 );*/
 
 
-                                Vehiculo vehiculo = new Vehiculo(vehiculoJson.getString("matricula"), cliente);
-                                /**Trabajo trabajo = new Trabajo(
+                                Car car = new Car(vehiculoJson.getString("matricula"), customer);
+                                /**Job job = new Job(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
-                                        vehiculo
+                                        car
                                 );*/
-                                Trabajo trabajo = new Trabajo(
+                                Job job = new Job(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
-                                        vehiculo
+                                        car
                                 );
-                                trabajo.fecha_inicio = trabajoJson.optString("fecha_inicio", null);
-                                trabajo.fecha_fin = trabajoJson.optString("fecha_fin", null);
-                                trabajo.comentarios = trabajoJson.optString("comentarios", null);
-                                trabajo.imagen = trabajoJson.optString("imagen", null);
-                                trabajo.mecanico_id = trabajoJson.optString("mecanico_id", null);
+                                job.startDate = trabajoJson.optString("fecha_inicio", null);
+                                job.endDate = trabajoJson.optString("fecha_fin", null);
+                                job.comment = trabajoJson.optString("comentarios", null);
+                                job.image = trabajoJson.optString("imagen", null);
+                                job.mechanicId = trabajoJson.optString("mecanico_id", null);
 
                                 Log.d("Trabajos", "Respuesta recibida: " + response.toString());
 
-                                trabajos.add(trabajo);
+                                jobs.add(job);
                             } catch (JSONException e) {
                                 e.printStackTrace();
                                 Log.e("Trabajos", "Error al parsear JSON", e);
@@ -311,7 +311,7 @@ public class JobsSearchFragment extends Fragment {
                     }
                     adapter.notifyDataSetChanged();
                 },
-                error -> Log.e("Volley", "Error al cargar trabajos", error)
+                error -> Log.e("Volley", "Error al cargar jobs", error)
         ) {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {

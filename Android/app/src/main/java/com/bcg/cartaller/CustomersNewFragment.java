@@ -29,20 +29,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Desde este fragment el mecánico podrá crear un nuevo cliente cubriendo un formulario
+ * Desde este fragment el mecánico podrá crear un nuevo customer cubriendo un formulario
  * con nombre, apellidos, dni, domicilio, teléfono y vehículos a su nombre.
  *
- * También desde el mismo formulario podrá editar los datos de un cliente que ya existe en BD.
+ * También desde el mismo formulario podrá editar los datos de un customer que ya existe en BD.
  * Para ello, los botones se muestran/ocultan.
  */
-public class ClientsNewFragment extends Fragment {
+public class CustomersNewFragment extends Fragment {
     private EditText etNombre, etApellidos, etDni, etTlf, etMail, etDireccion;
     private Button btnGuardarCliente, btnModificarCliente;
     private RequestQueue queue;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
 
-    public ClientsNewFragment() {}
+    public CustomersNewFragment() {}
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,7 +61,7 @@ public class ClientsNewFragment extends Fragment {
 
         /**
          * PARA MODIFICAR UN CLIENTE QUE YA EXISTE EN BD:
-         * se pasan los datos desde el cliente encontrado en clientsSearchFragment:
+         * se pasan los datos desde el customer encontrado en clientsSearchFragment:
          */
         if (getArguments() != null && getArguments().containsKey("dni")) {
             loadClientForModification(getArguments());
@@ -73,17 +73,17 @@ public class ClientsNewFragment extends Fragment {
             String dni = etDni.getText().toString().trim();
             String url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + Uri.encode(dni);
 
-            //primero hay que comprobar que el cliente no existe en BD. Se hace a través del dni:
+            //primero hay que comprobar que el customer no existe en BD. Se hace a través del dni:
             JsonArrayRequest checkDni = new JsonArrayRequest(
                     Request.Method.GET,
                     url,
                     null,
                     response -> {
                         if (response.length() > 0) {
-                            Toast.makeText(getContext(), "Ya existe un cliente con ese DNI", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Ya existe un customer con ese DNI", Toast.LENGTH_SHORT).show();
                             btnGuardarCliente.setEnabled(true);
                         } else {
-                            //Cuando se ha comprobado que el dni no existe en BD, se llama al método de guardar cliente:
+                            //Cuando se ha comprobado que el dni no existe en BD, se llama al método de guardar customer:
                             saveClient();
                         }
                     },
@@ -133,7 +133,7 @@ public class ClientsNewFragment extends Fragment {
             return;
         }
 
-        // 3 - creo el objeto cliente con todos sus datos
+        // 3 - creo el objeto customer con todos sus datos
         JSONObject clienteJson = new JSONObject();
         try {
             clienteJson.put("nombre", nombre);
@@ -157,11 +157,11 @@ public class ClientsNewFragment extends Fragment {
                 Request.Method.POST,
                 url,
                 response -> {
-                    Toast.makeText(getContext(), "Cliente guardado con éxito", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Customer guardado con éxito", Toast.LENGTH_SHORT).show();
                     btnGuardarCliente.setEnabled(true);
                 },
                 error -> {
-                    Toast.makeText(getContext(), "Error al guardar cliente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al guardar customer", Toast.LENGTH_SHORT).show();
                     btnGuardarCliente.setEnabled(true);
                     if (error.networkResponse != null) {
                         Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
@@ -202,7 +202,7 @@ public class ClientsNewFragment extends Fragment {
             ...
         }
         ]
-         Sino, devuleve un body vacio y volley lo interpreta como error, entonces el cliente
+         Sino, devuleve un body vacio y volley lo interpreta como error, entonces el customer
          se guarda en supabase, pero la app no lo muestra
          */
 
@@ -212,14 +212,14 @@ public class ClientsNewFragment extends Fragment {
                 clienteJson,
                 response -> {
 
-                    Toast.makeText(getContext(), "Cliente guardado con éxito: " + response.optString("dni"), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Customer guardado con éxito: " + response.optString("dni"), Toast.LENGTH_SHORT).show();
                     btnGuardarCliente.setEnabled(true);
                     //btnModificarCliente.setVisibility(View.VISIBLE);
 
                     cleanForm();
                 },
                 error -> {
-                    Toast.makeText(getContext(), "Error al guardar cliente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al guardar customer", Toast.LENGTH_SHORT).show();
                     btnGuardarCliente.setEnabled(true);
                     if (error.networkResponse != null) {
                         Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
@@ -273,7 +273,7 @@ public class ClientsNewFragment extends Fragment {
         });
     }
 
-    //modificar cliente:
+    //modificar customer:
     private void modifyClient(String dniOriginal) {
         String nombre = etNombre.getText().toString().trim();
         String apellidos = etApellidos.getText().toString().trim();
@@ -306,14 +306,14 @@ public class ClientsNewFragment extends Fragment {
                 url,
                 clienteActualizado,
                 response -> {
-                    Toast.makeText(getContext(), "Cliente actualizado correctamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Customer actualizado correctamente", Toast.LENGTH_SHORT).show();
                     limpiarFormulario();
                     btnModificarCliente.setVisibility(View.GONE);
                     btnGuardarCliente.setVisibility(View.VISIBLE);
                     etDni.setEnabled(true);
                 },
                 error -> {
-                    Toast.makeText(getContext(), "Error al actualizar cliente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al actualizar customer", Toast.LENGTH_SHORT).show();
                     if (error.networkResponse != null) {
                         Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
                         Log.e("SUPABASE", new String(error.networkResponse.data));
@@ -342,14 +342,14 @@ public class ClientsNewFragment extends Fragment {
                 Request.Method.PATCH,
                 url,
                 response -> {
-                    Toast.makeText(getContext(), "Cliente actualizado correctamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Customer actualizado correctamente", Toast.LENGTH_SHORT).show();
                     cleanForm();
                     btnModificarCliente.setVisibility(View.GONE);
                     btnGuardarCliente.setVisibility(View.VISIBLE);
                     etDni.setEnabled(true);
                 },
                 error -> {
-                    Toast.makeText(getContext(), "Error al actualizar cliente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Error al actualizar customer", Toast.LENGTH_SHORT).show();
                     if (error.networkResponse != null) {
                         Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
                         Log.e("SUPABASE", new String(error.networkResponse.data));

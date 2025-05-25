@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- botón para buscar un trabajo: CON MATERIAL DESIGN 3 -->
+        <!-- botón para buscar un job: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBuscarTrabajo"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -40,7 +40,7 @@
             android:gravity="center"
             android:background="@drawable/tab_button_selector" />
 
-        <!-- botón para añadir un trabajo: CON MATERIAL DESIGN 3 -->
+        <!-- botón para añadir un job: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNuevoTrabajo"
             style="@style/Widget.MaterialComponents.Button.TextButton"

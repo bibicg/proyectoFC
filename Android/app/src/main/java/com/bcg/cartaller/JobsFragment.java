@@ -15,7 +15,7 @@ import androidx.fragment.app.Fragment;
  * - ver sus trabajos
  * - buscar trabajo por estado (pendiente, en curso, finalizado)
  * - buscar trabajo por matricula
- * - buscar trabajo por cliente
+ * - buscar trabajo por customer
  * - añadir nuevos trabajos
  * - modificar los existentes
  */

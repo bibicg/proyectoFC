@@ -117,14 +117,14 @@
                 android:id="@+id/editarTrabajoButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Modificar trabajo"
+                android:text="Modificar job"
                 android:layout_marginTop="16dp" />
 
             <Button
                 android:id="@+id/eliminarTrabajoButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Eliminar trabajo"
+                android:text="Eliminar job"
                 android:layout_marginTop="8dp"
                 android:backgroundTint="@android:color/holo_red_dark"
                 android:textColor="@android:color/white" />

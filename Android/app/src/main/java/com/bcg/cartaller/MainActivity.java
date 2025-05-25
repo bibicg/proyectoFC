@@ -3,14 +3,10 @@ package com.bcg.cartaller;
 import android.content.Intent;
 import android.os.Bundle;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.core.graphics.Insets;
 import androidx.core.view.GravityCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
@@ -51,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.nav_clients) { // -> Clientes
-                selectedFragment = new ClientsFragment();
+                selectedFragment = new CustomersFragment();
             } else if (itemId == R.id.nav_jobs) { // -> Trabajos
                 selectedFragment = new JobsFragment();
             } else if (itemId == R.id.nav_profile) { // -> Perfil

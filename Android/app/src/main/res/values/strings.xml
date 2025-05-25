@@ -7,4 +7,14 @@
     <string name="view_details">Ver detalles</string>
     <string name="open_drawer">Abrir</string>
     <string name="close_drawer">Cerrar</string>
+
+    <!--Para los textos como @string -->
+    <string name="label_dni_placeholder">DNI: ---</string>
+    <string name="label_name_placeholder">Nombre: ---</string>
+    <string name="label_phone_placeholder">Teléfono: ---</string>
+    <string name="label_cars_placeholder">Vehículos: 0</string>
+
+    <string name="button_edit_customer">Editar cliente</string>
+    <string name="button_add_car">Añadir vehículo</string>
+
 </resources>

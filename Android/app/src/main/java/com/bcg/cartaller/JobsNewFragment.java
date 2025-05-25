@@ -465,7 +465,7 @@ public class JobsNewFragment extends Fragment {
              trabajoJson,
              responseTrabajo -> {
              int trabajoId = responseTrabajo.optInt("id"); // Obtener el ID del trabajo recién creado
-             Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+             Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
              if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
              guardarTareas(trabajoId, tareasDescripcion);
@@ -511,7 +511,7 @@ public class JobsNewFragment extends Fragment {
                         try {
                             JSONObject trabajo = responseArray.getJSONObject(0);
                             int trabajoId = trabajo.getInt("id");
-                            Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
                             if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
                                 guardarTareas(trabajoId, tareasDescripcion);
@@ -557,7 +557,7 @@ public class JobsNewFragment extends Fragment {
                             JSONObject trabajo = responseArray.getJSONObject(0);
                             int trabajoId = trabajo.getInt("id");
 
-                            Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getContext(), "Job guardado con éxito (ID: " + trabajoId + ")", Toast.LENGTH_SHORT).show();
 
                             if (tareasDescripcion != null && !tareasDescripcion.isEmpty()) {
                                 saveTask(trabajoId, tareasDescripcion);

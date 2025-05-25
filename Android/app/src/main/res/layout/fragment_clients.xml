@@ -18,7 +18,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- botón para buscar un cliente: CON MATERIAL DESIGN 3 -->
+        <!-- botón para buscar un customer: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnBuscarCliente"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -40,7 +40,7 @@
             android:gravity="center"
             android:background="@drawable/tab_button_selector" />
 
-        <!-- botón para añadir un cliente: CON MATERIAL DESIGN 3 -->
+        <!-- botón para añadir un customer: CON MATERIAL DESIGN 3 -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnNuevoCliente"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -78,7 +78,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- contenedor para mostrar el contenido del click de ambos botones -->
-        <!--se mostrará dentro de él un fragment u otro (ClientsNewFragment o ClientsSearchFragment) -->
+        <!--se mostrará dentro de él un fragment u otro (CustomersNewFragment o CustomersSearchFragment) -->
         <FrameLayout
             android:id="@+id/clientsGeneralContainer"
             android:layout_width="match_parent"

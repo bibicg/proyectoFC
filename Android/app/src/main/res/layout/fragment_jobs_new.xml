@@ -47,7 +47,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:hint="Descripción del trabajo"
+        android:hint="Descripción del job"
         android:inputType="textMultiLine"
         app:layout_constraintTop_toBottomOf="@+id/textViewVehiculoInfo"
         app:layout_constraintStart_toStartOf="parent"

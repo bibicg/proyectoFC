@@ -154,12 +154,12 @@ public class JobsDetailFragment extends Fragment {
                 Request.Method.DELETE,
                 url,
                 response -> {
-                    //Toast.makeText(getContext(), "Trabajo eliminado correctamente", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(getContext(), "Job eliminado correctamente", Toast.LENGTH_SHORT).show();
                     //requireActivity().getSupportFragmentManager().popBackStack();
 
                     //se muestra un dialog de confirmacion en lugar de un toast:
                     new AlertDialog.Builder(requireContext())
-                            .setTitle("Trabajo eliminado")
+                            .setTitle("Job eliminado")
                             .setMessage("El trabajo ha sido eliminado correctamente.")
                             .setPositiveButton("Aceptar", (dialog, which) -> {
                                 FragmentManager fm = requireActivity().getSupportFragmentManager();
