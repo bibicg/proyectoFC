@@ -41,9 +41,11 @@ import java.util.Map;
 public class CustomersNewFragment extends Fragment {
     private EditText etName, etSurname, etDni, etPhone, etMail, etAddress;
     private Button btnSaveCustomer, btnModifyCustomer;
-    private RequestQueue queue;
-    private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+
+    //ya no es necesario porque se hace en el repository:
+    //private RequestQueue queue;
+    //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
+    //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
 
     //Creo una instancia del repo para poder separar la lógica de la UI:
     private CustomerRepository customerRepository;
@@ -63,7 +65,8 @@ public class CustomersNewFragment extends Fragment {
         btnSaveCustomer = view.findViewById(R.id.saveCustomerButton);
         btnModifyCustomer = view.findViewById(R.id.modifyCustomerButton);
 
-        queue = Volley.newRequestQueue(requireContext());
+        //Ya no es necesario pq se hace en el repository:
+        //queue = Volley.newRequestQueue(requireContext());
 
         //inicializo el repo:
         customerRepository = new CustomerRepository(requireContext());
@@ -76,9 +79,11 @@ public class CustomersNewFragment extends Fragment {
             loadClientForModification(getArguments());
         }
 
+
         btnSaveCustomer.setOnClickListener(v -> {
             btnSaveCustomer.setEnabled(false);
-
+            /**
+            //AHORA LA VERIFICACIÓN DEL DNI SE HACE EN EL CUSTOMER REPOSITOTY.
             String dni = etDni.getText().toString().trim();
             String url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + Uri.encode(dni);
 
@@ -163,9 +168,69 @@ public class CustomersNewFragment extends Fragment {
                     headers.put("Content-Type", "application/json");
                     return headers;
                 }
-            };
+            };*/
 
-            queue.add(checkDni);
+            String dni = etDni.getText().toString().trim();
+            String name = etName.getText().toString().trim();
+            String surname = etSurname.getText().toString().trim();
+            String phone = etPhone.getText().toString().trim();
+            String email = etMail.getText().toString().trim();
+            String address = etAddress.getText().toString().trim();
+
+            if (dni.isEmpty() || name.isEmpty() || surname.isEmpty()) {
+                Toast.makeText(getContext(), "Nombre, apellidos y DNI son obligatorios", Toast.LENGTH_SHORT).show();
+                btnSaveCustomer.setEnabled(true);
+                return;
+            }
+
+            customerRepository.checkDniExists(dni, new CustomerRepository.DniCheckCallback() {
+                @Override
+                public void onExists() {
+                    Toast.makeText(getContext(), "Ya existe un customer con ese DNI", Toast.LENGTH_SHORT).show();
+                    btnSaveCustomer.setEnabled(true);
+                }
+
+                @Override
+                public void onNotExists() {
+                    Customer newCustomer = new Customer();
+                    newCustomer.setDni(dni);
+                    newCustomer.setName(name);
+                    newCustomer.setSurname(surname);
+                    newCustomer.setPhone(phone);
+                    newCustomer.setEmail(email);
+                    newCustomer.setAddress(address);
+
+                    customerRepository.saveCustomer(newCustomer, new CustomerRepository.CustomerSaveCallback() {
+                        @Override
+                        public void onSuccess() {
+                            btnSaveCustomer.setEnabled(true);
+                            new AlertDialog.Builder(getContext())
+                                    .setTitle("Cliente guardado")
+                                    .setPositiveButton("OK", (dialog, which) -> {
+                                        dialog.dismiss();
+                                        cleanForm();
+                                    })
+                                    .show();
+                        }
+
+                        @Override
+                        public void onError(String message) {
+                            btnSaveCustomer.setEnabled(true);
+                            new AlertDialog.Builder(getContext())
+                                    .setTitle("Error")
+                                    .setMessage(message)
+                                    .setPositiveButton("OK", null)
+                                    .show();
+                        }
+                    });
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                    btnSaveCustomer.setEnabled(true);
+                }
+            });
         });
 
         return view;

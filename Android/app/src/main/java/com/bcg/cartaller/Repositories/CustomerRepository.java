@@ -23,6 +23,13 @@ import java.util.Map;
 
 /**
  * Para separa la lógica de la interfaz, implemento Repositories.
+ *
+ * SE ENCARGA DE LAS PETICIONES HTTP PARA:
+ * - BUSCAR CLIENTE (POR DNI / MATRÍCULA),
+ * - CREAR CLIENTE,
+ * - MODIFICAR CLIENTE,
+ * - COMPROBAR SI DNI DE CLIENTE YA EXISTE EN SUPABASE.
+ *
  * Como mejora futura habría que implementar el patrón MVVM (con repositories + viewModel)
  */
 public class CustomerRepository {
@@ -59,6 +66,17 @@ public class CustomerRepository {
         void onSuccess();
         void onError(String message);
     }
+
+    /**
+     * Este callback es para la comprobación de si el DNI del cliente ya existe en BD
+     * (para que, si ya existe, no deje crear un cliente con ese mismo DNI)
+     */
+    public interface DniCheckCallback {
+        void onExists();
+        void onNotExists();
+        void onError(String message);
+    }
+
 
     /**
      * BÚSQUEDA DE CLIENTE POR DNI / MATRÍCULA. Antes en CustomersSearchFragment.
@@ -144,6 +162,7 @@ public class CustomerRepository {
             return;
         }
 
+        //OPCION CON STRING REQUEST, POR SI NO SE RECIBE UN JSON, PORQUE VOLLEY LO ESPERA
         StringRequest request = new StringRequest(
                 Request.Method.POST,
                 url,
@@ -201,6 +220,12 @@ public class CustomerRepository {
             return;
         }
 
+        /**
+         * En SUPABASE es mejor usar PATCH que PUT, ya que PUT afecta a toda la fila, PATH solo al campo concreto que se
+         * cambia. Por eso, si usas PUT y hay algún error en algún campo, puedes llegar a borrar ese registro de BD!!!
+         *
+         * Uso StringRequest pq con JsonObjectRequest, al igual que en los POST, tb da erro la app
+         */
         StringRequest request = new StringRequest(
                 Request.Method.PATCH,
                 url,
@@ -237,6 +262,49 @@ public class CustomerRepository {
 
         queue.add(request);
     }
+
+    /**
+     * VERIFICACIÓN DE DNI DE CLIENTE: SI YA EXISTE UNO EN BD, NO DEJA CREAR OTRO CON ESE MISMO
+     * @param dni
+     * @param callback
+     */
+    public void checkDniExists(String dni, DniCheckCallback callback) {
+        String url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + Uri.encode(dni);
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    if (response.length() > 0) {
+                        callback.onExists();
+                    } else {
+                        callback.onNotExists();
+                    }
+                },
+                error -> {
+                    callback.onError("Error al verificar DNI");
+                    if (error.networkResponse != null) {
+                        Log.e("SUPABASE", "Código: " + error.networkResponse.statusCode);
+                        Log.e("SUPABASE", new String(error.networkResponse.data));
+                    }
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                headers.put("Content-Type", "application/json");
+                return headers;
+            }
+        };
+
+        queue.add(request);
+    }
+
 
 
 }
