@@ -21,6 +21,8 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bcg.cartaller.Models.Customer;
+import com.bcg.cartaller.Repositories.CustomerRepository;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,9 @@ public class CustomersNewFragment extends Fragment {
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
 
+    //Creo una instancia del repo para poder separar la lógica de la UI:
+    private CustomerRepository customerRepository;
+
     public CustomersNewFragment() {}
 
     @Override
@@ -59,6 +64,9 @@ public class CustomersNewFragment extends Fragment {
         btnModifyCustomer = view.findViewById(R.id.modifyCustomerButton);
 
         queue = Volley.newRequestQueue(requireContext());
+
+        //inicializo el repo:
+        customerRepository = new CustomerRepository(requireContext());
 
         /**
          * PARA MODIFICAR UN CLIENTE QUE YA EXISTE EN BD:
@@ -85,7 +93,55 @@ public class CustomersNewFragment extends Fragment {
                             btnSaveCustomer.setEnabled(true);
                         } else {
                             //Cuando se ha comprobado que el dni no existe en BD, se llama al método de guardar customer:
-                            saveClient();
+                            //saveClient();
+
+                            //AHORA SE LLAMA AL REPOSITORIO, QUE ES QUIEN HACE LA CONSULTA HTTP - POST:
+                            // Extraer datos del formulario
+                            String name = etName.getText().toString().trim();
+                            String surname = etSurname.getText().toString().trim();
+                            String phone = etPhone.getText().toString().trim();
+                            String email = etMail.getText().toString().trim();
+                            String address = etAddress.getText().toString().trim();
+
+                            if (name.isEmpty() || surname.isEmpty() || dni.isEmpty()) {
+                                Toast.makeText(getContext(), "Nombre, apellidos y DNI son obligatorios", Toast.LENGTH_SHORT).show();
+                                btnSaveCustomer.setEnabled(true);
+                                return;
+                            }
+
+                            // Crear objeto Customer sin id
+                            Customer newCustomer = new Customer();
+                            newCustomer.setDni(dni);
+                            newCustomer.setName(name);
+                            newCustomer.setSurname(surname);
+                            newCustomer.setPhone(phone);
+                            newCustomer.setEmail(email);
+                            newCustomer.setAddress(address);
+
+                            // Llamar al repositorio para guardar el customer
+                            customerRepository.saveCustomer(newCustomer, new CustomerRepository.CustomerSaveCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    btnSaveCustomer.setEnabled(true);
+                                    new AlertDialog.Builder(getContext())
+                                            .setTitle("Cliente guardado")
+                                            .setPositiveButton("OK", (dialog, which) -> {
+                                                dialog.dismiss();
+                                                cleanForm();
+                                            })
+                                            .show();
+                                }
+
+                                @Override
+                                public void onError(String message) {
+                                    btnSaveCustomer.setEnabled(true);
+                                    new AlertDialog.Builder(getContext())
+                                            .setTitle("Error")
+                                            .setMessage(message)
+                                            .setPositiveButton("OK", null)
+                                            .show();
+                                }
+                            });
                         }
                     },
                     error -> {
@@ -116,8 +172,9 @@ public class CustomersNewFragment extends Fragment {
     }
 
     /**
-     * MÉTODO QUE GUARDA EL CLIENTE EN BD DE SUPABASE:
-     */
+     * MÉTODO QUE GUARDA EL CLIENTE EN BD DE SUPABASE.
+     * Ahora en CustomerRepository (saveCustomer)
+
     private void saveClient() {
         // 1 - extraigo los datos de los campos del formulario
         String name = etName.getText().toString().trim();
@@ -256,11 +313,51 @@ public class CustomersNewFragment extends Fragment {
         btnModifyCustomer.setVisibility(View.VISIBLE);
 
         btnModifyCustomer.setOnClickListener(v -> {
-            modifyClient(args.getString("dni")); // PATCH
+            //modifyClient(args.getString("dni")); // PATCH
+
+            //Ahora, el método para modificar cliente está en el Customer Repositoty:
+            String nombre = etName.getText().toString().trim();
+            String apellidos = etSurname.getText().toString().trim();
+            String telefono = etPhone.getText().toString().trim();
+            String email = etMail.getText().toString().trim();
+            String direccion = etAddress.getText().toString().trim();
+
+            if (nombre.isEmpty() || apellidos.isEmpty()) {
+                Toast.makeText(getContext(), "Nombre y apellidos son obligatorios", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Customer updatedCustomer = new Customer();
+            updatedCustomer.setName(nombre);
+            updatedCustomer.setSurname(apellidos);
+            updatedCustomer.setPhone(telefono);
+            updatedCustomer.setEmail(email);
+            updatedCustomer.setAddress(direccion);
+
+            customerRepository.modifyCustomer(args.getString("dni"), updatedCustomer, new CustomerRepository.CustomerModifyCallback() {
+                @Override
+                public void onSuccess() {
+                    Toast.makeText(getContext(), "Cliente actualizado correctamente", Toast.LENGTH_SHORT).show();
+                    cleanForm();
+                    btnModifyCustomer.setVisibility(View.GONE);
+                    btnSaveCustomer.setVisibility(View.VISIBLE);
+                    etDni.setEnabled(true);
+                }
+
+                @Override
+                public void onError(String message) {
+                    Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                }
+            });
         });
     }
 
-    //modificar customer:
+
+
+    /**
+     * Modificar cliente. Ahora en el CustomerRepository.
+     * @param dniOriginal
+
     private void modifyClient(String dniOriginal) {
         String nombre = etName.getText().toString().trim();
         String apellidos = etSurname.getText().toString().trim();
@@ -293,7 +390,7 @@ public class CustomersNewFragment extends Fragment {
          *
          * Uso StringRequest pq con JsonObjectRequest, al igual que en los POST, tb da erro la app
          */
-        StringRequest request = new StringRequest(
+/**        StringRequest request = new StringRequest(
                 Request.Method.PATCH,
                 url,
                 response -> {
@@ -334,6 +431,6 @@ public class CustomersNewFragment extends Fragment {
             }
         };
         queue.add(request);
-    }
+    }*/
 }
 
