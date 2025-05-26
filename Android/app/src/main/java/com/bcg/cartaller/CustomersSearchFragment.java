@@ -130,7 +130,7 @@ public class CustomersSearchFragment extends Fragment {
         CharSequence[] opciones = {"Por DNI", "Por matrícula"};
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Buscar customer por:")
+                .setTitle("Buscar cliente por:")
                 .setItems(opciones, (dialog, which) -> {
                     switch (which) {
                         case 0: searchByDni(); break;
@@ -149,7 +149,7 @@ public class CustomersSearchFragment extends Fragment {
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
         titleDialog.setText("Buscar por DNI");
-        inputField.setHint("Introduce el DNI del customer");
+        inputField.setHint("Introduce el DNI del cliente");
 
         new AlertDialog.Builder(getContext())
                 .setView(dialogView)
