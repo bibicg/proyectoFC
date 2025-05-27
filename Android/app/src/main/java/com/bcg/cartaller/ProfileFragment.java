@@ -137,7 +137,7 @@ public class ProfileFragment extends Fragment {
                     List<Job> jobs = new ArrayList<>();
                     try {
                         Log.d("SUPABASE", "Respuesta completa: " + response.toString());
-                        Log.d("SUPABASE", "Cantidad de jobs: " + response.length());
+                        Log.d("SUPABASE", "Cantidad de trabajos: " + response.length());
 
                         if (response.length() == 0) {
                             Toast.makeText(getContext(), "No hay trabajos activos asignados.", Toast.LENGTH_LONG).show();

@@ -137,11 +137,11 @@ public class JobsSearchFragment extends Fragment {
     private void searchByStatus() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Selecciona estado:")
-                .setItems(new CharSequence[]{"Pendiente", "En curso", "Acabado"}, (dialog, which) -> {
+                .setItems(new CharSequence[]{"Pendiente", "En curso", "Finalizado"}, (dialog, which) -> {
                     switch (which) {
                         case 0: showJobsByFilter("pendiente", null, null); break;
                         case 1: showJobsByFilter("en curso", null, null); break;
-                        case 2: showJobsByFilter("acabado", null, null); break;
+                        case 2: showJobsByFilter("finalizado", null, null); break;
                     }
                 }).show();
     }
@@ -227,11 +227,15 @@ public class JobsSearchFragment extends Fragment {
             return;
         }
 
-        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
-
-        //Añadir los campos que incluí a posteriori en trabajo:
-        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos(matricula,clientes(dni))";
-
+        /**
+         *
+         * llamada al endpoint de trabajos: que recupere todos los datos de los trabajos, todos de los vehículos y todos de los clientes, asi
+         * no hay problema por como están cosntruidas las relaciones en las tablas (ya que aquí hay una relación anidada):
+         */
+        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //Esta tb funciona: ya que la clave es el Id, por eso hay que hacer un INNER JOIN -> !inner
+        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos!inner(matricula,clientes!inner(dni))";
+        
 
         // Filtros dinámicos
         List<String> filter = new ArrayList<>();
@@ -258,7 +262,7 @@ public class JobsSearchFragment extends Fragment {
                 response -> {
                     jobs.clear();
                     if (response.length() == 0) {
-                        String mensaje = "No se encontraron jobs";
+                        String mensaje = "No se encontraron trabajos";
                         if (estado != null && !estado.equals("todos")) {
                             mensaje += " con estado '" + estado + "'";
                         } else if (dniCliente != null && !dniCliente.isEmpty()) {
