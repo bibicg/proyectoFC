@@ -3,6 +3,7 @@ package com.bcg.cartaller.Repositories;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.text.TextUtils;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -10,6 +11,9 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bcg.cartaller.Models.Car;
+import com.bcg.cartaller.Models.Customer;
+import com.bcg.cartaller.Models.Job;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -82,6 +86,14 @@ public class JobRepository {
      */
     public interface TypeTaskLoadCallback {
         void onLoaded(List<String> tareas);
+        void onError(String message);
+    }
+
+    /**
+     * Este callback es para llamar al método encargado de mostrar los trabajos dependiendo del filtro
+     */
+    public interface JobByFilterShowCallback {
+        void onSuccess(List<Job> jobList);
         void onError(String message);
     }
 
@@ -321,6 +333,97 @@ public class JobRepository {
                 },
                 error -> {
                     callback.onError("Error cargando tareas tipo desde Supabase");
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                return headers;
+            }
+        };
+
+        queue.add(request);
+    }
+
+    /**
+     * Método que recupera los trabajos del mecánico, dependiendo del filtro con el que se haga
+     * la búsqueda (estado , dni cliente, matrícula coche) con HTTP - GET:
+     * @param estado
+     * @param dniCliente
+     * @param matriculaVehiculo
+     * @param callback
+     */
+    public void showJobsByFilter(String estado, String dniCliente, String matriculaVehiculo, JobByFilterShowCallback callback) {
+        SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        String mecanicoId = prefs.getString("mecanico_id", null);
+
+        if (mecanicoId == null) {
+            callback.onError("ID mecánico no encontrado");
+            return;
+        }
+
+        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+
+        List<String> filter = new ArrayList<>();
+        filter.add("mecanico_id=eq." + mecanicoId);
+
+        if (estado != null && !estado.equals("todos")) {
+            filter.add("estado=eq." + estado);
+        }
+        if (dniCliente != null && !dniCliente.isEmpty()) {
+            filter.add("vehiculos.clientes.dni=eq." + dniCliente);
+        }
+        if (matriculaVehiculo != null && !matriculaVehiculo.isEmpty()) {
+            filter.add("vehiculos.matricula=eq." + matriculaVehiculo);
+        }
+
+        String url = baseUrl + "&" + TextUtils.join("&", filter);
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    List<Job> jobs = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+                        try {
+                            JSONObject trabajoJson = response.getJSONObject(i);
+                            JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
+                            JSONObject clienteJson = vehiculoJson.getJSONObject("clientes");
+
+                            Customer customer = new Customer(clienteJson.getString("dni"));
+                            Car car = new Car(vehiculoJson.getString("matricula"), customer);
+
+                            Job job = new Job(
+                                    String.valueOf(trabajoJson.getInt("id")),
+                                    trabajoJson.getString("estado"),
+                                    trabajoJson.getString("descripcion"),
+                                    car
+                            );
+
+                            job.startDate = trabajoJson.optString("fecha_inicio", null);
+                            job.endDate = trabajoJson.optString("fecha_fin", null);
+                            job.comment = trabajoJson.optString("comentarios", null);
+                            job.image = trabajoJson.optString("imagen", null);
+                            job.mechanicId = trabajoJson.optString("mecanico_id", null);
+
+                            jobs.add(job);
+                        } catch (JSONException e) {
+                            callback.onError("Error al parsear trabajo");
+                            return;
+                        }
+                    }
+                    callback.onSuccess(jobs);
+                },
+                error -> {
+                    String msg = "Error al cargar trabajos";
+                    if (error.networkResponse != null)
+                        msg += ": " + new String(error.networkResponse.data);
+                    callback.onError(msg);
                 }
         ) {
             @Override
