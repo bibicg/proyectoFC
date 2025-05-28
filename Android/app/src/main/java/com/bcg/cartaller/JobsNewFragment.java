@@ -360,6 +360,7 @@ public class JobsNewFragment extends Fragment {
         String estado = spinnerStatus.getSelectedItem().toString();
         String comentarios = etComments.getText().toString().trim();
 
+        /** me dan error los campos null porque postgree no los maneja bien
         JSONObject jobJson = new JSONObject();
         try {
             jobJson.put("vehiculo_id", carIdSelect);
@@ -373,7 +374,41 @@ public class JobsNewFragment extends Fragment {
         } catch (JSONException e) {
             Toast.makeText(getContext(), "Error preparando datos del trabajo", Toast.LENGTH_SHORT).show();
             return;
+        }*/
+        JSONObject jobJson = new JSONObject();
+        try {
+            jobJson.put("vehiculo_id", carIdSelect);
+            jobJson.put("mecanico_id", mecanicoId);
+            jobJson.put("descripcion", descripcion);
+            jobJson.put("fecha_inicio", fechaInicio);
+
+            if (!fechaFin.isEmpty()) {
+                jobJson.put("fecha_fin", fechaFin);
+            } else {
+                jobJson.put("fecha_fin", JSONObject.NULL); // para que no falle en postgree
+            }
+
+            if (!estado.isEmpty()) {
+                jobJson.put("estado", estado);
+            }
+
+            if (!comentarios.isEmpty()) {
+                jobJson.put("comentarios", comentarios);
+            } else {
+                jobJson.put("comentarios", JSONObject.NULL); // para que no falle en postgree
+            }
+
+            if (base64Image != null && !base64Image.isEmpty()) {
+                jobJson.put("imagen", "data:image/jpeg;base64," + base64Image);
+            } else {
+                jobJson.put("imagen", JSONObject.NULL); // para que no falle en postgree
+            }
+
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error preparando datos del trabajo", Toast.LENGTH_SHORT).show();
+            return;
         }
+
 
         jobRepository.saveJob(jobJson, new JobRepository.JobSaveCallback() { //LLLAMADA AL REPOSITORY
             @Override
@@ -413,7 +448,7 @@ public class JobsNewFragment extends Fragment {
     /**
      * LLAMADA AL REPOSITORY JobRepository, que es quien ejecuta el método HTTP - PATCH para actualizar un trabajo existente
      */
-    private void callUpdateJob(String jobId) {
+/**    private void callUpdateJob(String jobId) {
         JSONObject data = new JSONObject();
         try {
             data.put("descripcion", etDescriptionJob.getText().toString());
@@ -439,7 +474,80 @@ public class JobsNewFragment extends Fragment {
                 Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
             }
         });
+    }*/
+private void callUpdateJob(String jobId) {
+    JSONObject data = new JSONObject();
+
+    try {
+        String descripcion = etDescriptionJob.getText().toString().trim();
+        if (descripcion.isEmpty()) {
+            Toast.makeText(getContext(), "La descripción no puede estar vacía", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        data.put("descripcion", descripcion);
+
+        String fechaInicio = etStartDate.getText().toString().trim();
+        if (fechaInicio.isEmpty()) {
+            Toast.makeText(getContext(), "La fecha de inicio es obligatoria", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        data.put("fecha_inicio", fechaInicio);
+
+        String fechaFin = etEndDate.getText().toString().trim();
+        if (!fechaFin.isEmpty() && !fechaFin.equalsIgnoreCase("null")) {
+            data.put("fecha_fin", fechaFin);
+        } else {
+            data.put("fecha_fin", JSONObject.NULL);
+        }
+
+        String comentarios = etComments.getText().toString().trim();
+        if (!comentarios.isEmpty() && !comentarios.equalsIgnoreCase("null")) {
+            data.put("comentarios", comentarios);
+        } else {
+            data.put("comentarios", JSONObject.NULL);
+        }
+
+        String estado = spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString().trim() : "";
+        if (!estado.isEmpty() && !estado.equalsIgnoreCase("null")) {
+            data.put("estado", estado);
+        } else {
+            data.put("estado", JSONObject.NULL);
+        }
+
+        if (base64Image != null && !base64Image.isEmpty()) {
+            data.put("imagen", "data:image/jpeg;base64," + base64Image);
+        } else {
+            data.put("imagen", JSONObject.NULL);
+        }
+
+        Log.d("UPDATE_JSON", data.toString());
+
+    } catch (JSONException e) {
+        Toast.makeText(getContext(), "Error al preparar la actualización", Toast.LENGTH_SHORT).show();
+        return;
     }
+
+    jobRepository.updateJob(jobId, data, new JobRepository.JobUpdateCallback() {
+        @Override
+        public void onSuccess() {
+            Toast.makeText(getContext(), "Trabajo actualizado correctamente", Toast.LENGTH_SHORT).show();
+            //envia una señal al fragment anterior (JobsDetailFragment) que es donde veo detalles del trabajo:
+            Bundle result = new Bundle();
+            result.putBoolean("trabajo_actualizado", true);
+            getParentFragmentManager().setFragmentResult("update_success", result);
+
+            //cierro este fragment y vuelvo atrás cuando el trabajo se ha actualizado:
+            requireActivity().getSupportFragmentManager().popBackStack();
+        }
+
+        @Override
+        public void onError(String message) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    });
+}
+
+
 
 
 

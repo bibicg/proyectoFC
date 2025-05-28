@@ -16,6 +16,9 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bcg.cartaller.Repositories.CarRepository;
+import com.bcg.cartaller.Repositories.JobRepository;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.nio.charset.StandardCharsets;
@@ -29,11 +32,17 @@ import java.util.Map;
  * pero realmente sería lógica replicada.
  */
 public class CarNewFragment extends Fragment {
-    private RequestQueue queue;
     private EditText etLicensePlate, etBrand, etModel, etYear;
     private Button btnSave;
-    private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+    /**
+     * Todo lo que queda obsoleto al pasar los métodos HTTP al repository:
+     */
+    //private RequestQueue queue;
+    //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
+    //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+
+    //para el repository:
+    private CarRepository carRepository;
 
     public CarNewFragment() {
     }
@@ -48,18 +57,23 @@ public class CarNewFragment extends Fragment {
         btnSave = view.findViewById(R.id.guardarVehiculoButton);
         etYear = view.findViewById(R.id.editTextAnio);
 
-        queue = Volley.newRequestQueue(requireContext());
+        //queue = Volley.newRequestQueue(requireContext());
+
+        //inicializo el repository:
+        carRepository = new CarRepository(requireContext());
 
         /**
          * El usuario busca el customer por su dni, pero en supabase la relación entre las tablas
          * de los vehículos y de los clientes a los que pertenecen, se hace mediante el id del customer.
          * QUIZÁS DEBERÍA HABERLO HECHO POR DNI, PORQUE ME ESTÁ DANDO ERRORES!!!!!!!
-         */
+
         //String dni = getArguments() != null ? getArguments().getString("cliente_dni") : null;
         int clienteId = getArguments() != null ? getArguments().getInt("cliente_id", -1) : -1;
+         */
 
 
         btnSave.setOnClickListener(v -> {
+            /**
             String matricula = etLicensePlate.getText().toString().trim();
             String marca = etBrand.getText().toString().trim();
             String modelo = etModel.getText().toString().trim();
@@ -74,7 +88,7 @@ public class CarNewFragment extends Fragment {
                     Toast.makeText(getContext(), "El año debe ser un número válido", Toast.LENGTH_SHORT).show();
                     return;
                 }
-            }
+            }*/
 
             /**
             if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || dni == null) {
@@ -82,19 +96,87 @@ public class CarNewFragment extends Fragment {
                 return;
             }*/
             //Año no es obligatorio:
-            if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || clienteId == -1) {
+/**            if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || clienteId == -1) {
                 Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
                 return;
-            }
+            }*/
 
             //guardarVehiculo(matricula, marca, modelo, dni);
-            saveCar(matricula, marca, modelo, anio, clienteId);
-        });
+            //saveCar(matricula, marca, modelo, anio, clienteId); //llamada al antiguo metodo que estaba en esta clase
 
+            //Llamada al método que contiene la llamada al repository:
+            callSaveCar();
+
+        });
         return view;
     }
 
-    //private void guardarVehiculo(String matricula, String marca, String modelo, String dni) {
+    /**
+     * Método que a su vez contiene la llamada a CarRepository, que es donde se ejecuta el HTTP - POST
+     */
+    private void callSaveCar() {
+        String matricula = etLicensePlate.getText().toString().trim();
+        String marca = etBrand.getText().toString().trim();
+        String modelo = etModel.getText().toString().trim();
+        String anioStr = etYear.getText().toString().trim();
+
+        int clienteId = getArguments() != null ? getArguments().getInt("cliente_id", -1) : -1;
+
+        if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || clienteId == -1) {
+            Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        int anio = -1;
+        if (!anioStr.isEmpty()) {
+            try {
+                anio = Integer.parseInt(anioStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(getContext(), "El año debe ser un número válido", Toast.LENGTH_SHORT).show();
+                return;
+            }
+        }
+
+        //primero creo el json del vehículo con los datos ingresados en la UI,
+        //para posteriormente poder mandarlo al hacer el GET:
+        JSONObject carJson = new JSONObject();
+        try {
+            carJson.put("matricula", matricula);
+            carJson.put("marca", marca);
+            carJson.put("modelo", modelo);
+            carJson.put("cliente_id", clienteId);
+            if (anio != -1) {
+                carJson.put("anio", anio);
+            }
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error preparando JSON", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        //llamada al repository que, a su vez, llama al método encargado de guardar el vehículo:
+        carRepository.saveCar(carJson, new CarRepository.CarSaveCallback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(getContext(), "Vehículo guardado con éxito", Toast.LENGTH_SHORT).show();
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+
+    /**
+     * private void guardarVehiculo. Crea el vehículo en BD. Ahora movido a CarRepository.
+     * @param licensePlate
+     * @param brand
+     * @param model
+     * @param year
+     * @param customerId
+
     private void saveCar(String licensePlate, String brand, String model, int year, int customerId){
 
         String url = SUPABASE_URL + "/rest/v1/vehiculos";
@@ -127,7 +209,7 @@ public class CarNewFragment extends Fragment {
          * MUESTRA UN TOAST DE ERROR PORQUE VOLLEY NO CONTROLA BIEN ESTA SITUACIÓN "INESPERADA"
         */
 
-        StringRequest request = new StringRequest( // aunque supabase devuelva vacío no da error
+/**        StringRequest request = new StringRequest( // aunque supabase devuelva vacío no da error
                 Request.Method.POST,
                 url,
                 response -> {
@@ -184,6 +266,6 @@ public class CarNewFragment extends Fragment {
         };
 
         queue.add(request);
-    }
+    }*/
 }
 

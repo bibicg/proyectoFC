@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -98,13 +99,23 @@ public class JobRepository {
     }
 
     /**
+     * Este callback es para llamar al método encargado de mostrar el trabajo actualizado
+     * despyes de haberse modificado en el formulario de JobsNewFragment
+
+    public interface JobDetailCallback {
+        void onSuccess(JSONObject jobData);
+        void onError(String message);
+    }*/
+
+
+    /**
      * CREAR UN NUEVO TRABAJO, GUARDÁNDOLO EN LA BD DE SUPABASE - guardarTrabajo
-     * @param trabajoJson
+     * @param jobJson
      * @param callback
      */
-    public void saveJob(JSONObject trabajoJson, JobSaveCallback callback) {
+    public void saveJob(JSONObject jobJson, JobSaveCallback callback) {
         JSONArray dataArray = new JSONArray();
-        dataArray.put(trabajoJson);
+        dataArray.put(jobJson);
 
         String url = SUPABASE_URL + "/rest/v1/trabajos";
 
@@ -119,8 +130,8 @@ public class JobRepository {
                     try {
                         // Supabase devuelve un array JSON como string, por eso hay que parsearlo:
                         JSONArray responseArray = new JSONArray(responseString);
-                        JSONObject trabajo = responseArray.getJSONObject(0);
-                        int jobId = trabajo.getInt("id");
+                        JSONObject job = responseArray.getJSONObject(0);
+                        int jobId = job.getInt("id");
                         callback.onSuccess(jobId);
                     } catch (JSONException e) {
                         callback.onError("Error parseando respuesta JSON");
@@ -199,6 +210,7 @@ public class JobRepository {
             public Map<String, String> getHeaders() {
                 SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
@@ -218,15 +230,15 @@ public class JobRepository {
     public void saveTasks(int jobId, List<String> taskDescriptions, TaskSaveCallback callback) {
         String url = SUPABASE_URL + "/rest/v1/tareas";
         for (String descripcion : taskDescriptions) {
-            JSONObject tareaJson = new JSONObject();
+            JSONObject taskJson = new JSONObject();
             try {
-                tareaJson.put("trabajo_id", jobId);
-                tareaJson.put("descripcion", descripcion);
+                taskJson.put("trabajo_id", jobId);
+                taskJson.put("descripcion", descripcion);
 
                 JsonObjectRequest request = new JsonObjectRequest(
                         Request.Method.POST,
                         url,
-                        tareaJson,
+                        taskJson,
                         response -> {
                             callback.onSuccess();
                         },
@@ -242,6 +254,7 @@ public class JobRepository {
                     public Map<String, String> getHeaders() {
                         SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                         String token = prefs.getString("access_token", "");
+
                         Map<String, String> headers = new HashMap<>();
                         headers.put("apikey", API_ANON_KEY);
                         headers.put("Authorization", "Bearer " + token);
@@ -284,20 +297,21 @@ public class JobRepository {
                             String modelo = car.optString("modelo", "");
                             callback.onFound(id, marca, modelo);
                         } catch (JSONException e) {
-                            callback.onError("Error al procesar JSON de vehículo");
+                            callback.onError("Error al procesar vehículo");
                         }
                     } else {
                         callback.onNotFound();
                     }
                 },
                 error -> {
-                    callback.onError("Error de red al buscar vehículo");
+                    callback.onError("Error al buscar vehículo");
                 }
         ) {
             @Override
             public Map<String, String> getHeaders() {
                 SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
@@ -325,7 +339,7 @@ public class JobRepository {
                         try {
                             tareas.add(response.getJSONObject(i).getString("descripcion"));
                         } catch (JSONException e) {
-                            callback.onError("Error leyendo JSON de tareas tipo");
+                            callback.onError("Error recibiendo tareas tipo");
                             return;
                         }
                     }
@@ -339,6 +353,7 @@ public class JobRepository {
             public Map<String, String> getHeaders() {
                 SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
@@ -357,6 +372,7 @@ public class JobRepository {
      * @param matriculaVehiculo
      * @param callback
      */
+
     public void showJobsByFilter(String estado, String dniCliente, String matriculaVehiculo, JobByFilterShowCallback callback) {
         SharedPreferences prefs = context.getSharedPreferences("prefs", Context.MODE_PRIVATE);
         String mecanicoId = prefs.getString("mecanico_id", null);
@@ -366,7 +382,11 @@ public class JobRepository {
             return;
         }
 
-        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //Uso !inner para relaciones anidadas pq no me está funcionando bien el filtrado:
+        String baseUrl = SUPABASE_URL +
+                "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id," +
+                "vehiculos!inner(matricula,clientes!inner(dni))";
 
         List<String> filter = new ArrayList<>();
         filter.add("mecanico_id=eq." + mecanicoId);
@@ -375,13 +395,14 @@ public class JobRepository {
             filter.add("estado=eq." + estado);
         }
         if (dniCliente != null && !dniCliente.isEmpty()) {
-            filter.add("vehiculos.clientes.dni=eq." + dniCliente);
+            filter.add("vehiculos.clientes.dni=ilike.*" + dniCliente + "*");
         }
         if (matriculaVehiculo != null && !matriculaVehiculo.isEmpty()) {
-            filter.add("vehiculos.matricula=eq." + matriculaVehiculo);
+            filter.add("vehiculos.matricula=ilike.*" + matriculaVehiculo + "*");
         }
 
         String url = baseUrl + "&" + TextUtils.join("&", filter);
+        Log.d("JOB_FILTER_URL", url);
 
         JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
@@ -392,19 +413,21 @@ public class JobRepository {
                     for (int i = 0; i < response.length(); i++) {
                         try {
                             JSONObject trabajoJson = response.getJSONObject(i);
-                            JSONObject vehiculoJson = trabajoJson.getJSONObject("vehiculos");
-                            JSONObject clienteJson = vehiculoJson.getJSONObject("clientes");
+                            JSONObject vehiculoJson = trabajoJson.optJSONObject("vehiculos");
+                            JSONObject clienteJson = vehiculoJson != null ? vehiculoJson.optJSONObject("clientes") : null;
 
-                            Customer customer = new Customer(clienteJson.getString("dni"));
-                            Car car = new Car(vehiculoJson.getString("matricula"), customer);
+                            String dni = clienteJson != null ? clienteJson.optString("dni", "") : "";
+                            String matricula = vehiculoJson != null ? vehiculoJson.optString("matricula", "") : "";
+
+                            Customer customer = new Customer(dni);
+                            Car car = new Car(matricula, customer);
 
                             Job job = new Job(
                                     String.valueOf(trabajoJson.getInt("id")),
-                                    trabajoJson.getString("estado"),
-                                    trabajoJson.getString("descripcion"),
+                                    trabajoJson.optString("estado", ""),
+                                    trabajoJson.optString("descripcion", ""),
                                     car
                             );
-
                             job.startDate = trabajoJson.optString("fecha_inicio", null);
                             job.endDate = trabajoJson.optString("fecha_fin", null);
                             job.comment = trabajoJson.optString("comentarios", null);
@@ -413,7 +436,7 @@ public class JobRepository {
 
                             jobs.add(job);
                         } catch (JSONException e) {
-                            callback.onError("Error al parsear trabajo");
+                            callback.onError("No se encontraron trabajos.");
                             return;
                         }
                     }
@@ -430,6 +453,7 @@ public class JobRepository {
             public Map<String, String> getHeaders() {
                 SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
                 String token = prefs.getString("access_token", "");
+
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
@@ -437,7 +461,45 @@ public class JobRepository {
             }
         };
 
-        queue.add(request);
+        Volley.newRequestQueue(context).add(request);
     }
+
+    /**
+     * Metodo que recarga la info del JobDetailFragment después de haber hecho una modificacion en el trabajo
+
+    public void getJobById(String jobId, JobDetailCallback callback) {
+        String url = SUPABASE_URL + "/rest/v1/trabajos?id=eq." + jobId +
+                "&select=descripcion,fecha_inicio,fecha_fin,estado,comentarios,matricula,dni_cliente,imagen";
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    if (response.length() > 0) {
+                        callback.onSuccess(response.optJSONObject(0));
+                    } else {
+                        callback.onError("No se encontró el trabajo.");
+                    }
+                },
+                error -> {
+                    callback.onError("Error de red al obtener datos.");
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                return headers;
+            }
+        };
+
+        Volley.newRequestQueue(context).add(request);
+    }*/
 }
+
 
