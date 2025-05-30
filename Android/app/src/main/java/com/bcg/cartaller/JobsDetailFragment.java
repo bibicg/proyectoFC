@@ -15,15 +15,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentResultListener;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -117,6 +122,22 @@ public class JobsDetailFragment extends Fragment {
                     showConfirmationDelete(args.getString("trabajo_id")));
         }
 
+        /**
+         * Para que, una vez hechas las modificaciones, al volver atrás, se vean los datos del trabajo modificados.
+         * Sin esto, se muestran en el estado previo a la modificación, y es confuso.
+         */
+        getParentFragmentManager().setFragmentResultListener("update_success", this, new FragmentResultListener() {
+            @Override
+            public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
+                boolean actualizado = result.getBoolean("trabajo_actualizado", false);
+                if (actualizado) {
+                    Toast.makeText(getContext(), "Trabajo actualizado", Toast.LENGTH_SHORT).show();
+                    recargarDatos(); // metodo que vuelve a cargar el trabajo para que los datos se muestren modificados
+                }
+            }
+        });
+
+
         return view;
     }
 
@@ -194,6 +215,61 @@ public class JobsDetailFragment extends Fragment {
 
         queue.add(request);
     }
+
+    private void recargarDatos() {
+        String trabajoId = getArguments().getString("trabajo_id");
+        if (trabajoId == null) return;
+
+        String url = "https://gtiqlopkoiconeivobxa.supabase.co/rest/v1/trabajos?id=eq." + trabajoId + "&select=*";
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    if (response.length() > 0) {
+                        JSONObject job = response.optJSONObject(0);
+                        if (job != null) {
+                            tvDescription.setText(job.optString("descripcion", ""));
+                            tvStartDate.setText(job.optString("fecha_inicio", ""));
+                            tvEndDate.setText(job.optString("fecha_fin", ""));
+                            tvStatus.setText(job.optString("estado", ""));
+                            tvComments.setText(job.optString("comentarios", ""));
+                            tvLicensePlate.setText(job.optString("matricula", ""));
+                            tvDniCustomer.setText(job.optString("dni_cliente", ""));
+
+                            String base64Image = job.optString("imagen", null);
+                            if (base64Image != null && base64Image.contains(",")) {
+                                base64Image = base64Image.substring(base64Image.indexOf(",") + 1);
+                            }
+
+                            try {
+                                byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                                ivJob.setImageBitmap(bitmap);
+                            } catch (Exception e) {
+                                ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                            }
+                        }
+                    }
+                },
+                error -> Log.e("SUPABASE", "Error al recargar trabajo: " + error.toString())
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                return headers;
+            }
+        };
+
+        queue.add(request);
+    }
+
 
 
 

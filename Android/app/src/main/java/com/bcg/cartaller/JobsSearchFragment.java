@@ -26,6 +26,8 @@ import com.bcg.cartaller.Adapters.JobAdapter;
 import com.bcg.cartaller.Models.Customer;
 import com.bcg.cartaller.Models.Job;
 import com.bcg.cartaller.Models.Car;
+import com.bcg.cartaller.Repositories.JobRepository;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.ArrayList;
@@ -45,10 +47,13 @@ import java.util.Map;
  */
 public class JobsSearchFragment extends Fragment {
     private RequestQueue queue;
-    private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+    //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
+    //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<Job> jobs = new ArrayList<>();
     private JobAdapter adapter;
+
+    //para el repository:
+    private JobRepository jobRepository;
 
     public JobsSearchFragment() {}
 
@@ -63,8 +68,10 @@ public class JobsSearchFragment extends Fragment {
         // Al entrar en este fragment, se carga un Dialog que muestra las opciones de búsqueda:
         // mostrarDialogBusqueda();
 
-        queue = Volley.newRequestQueue(requireContext());
+        //queue = Volley.newRequestQueue(requireContext());
 
+        //inicializo el repository:
+        jobRepository = new JobRepository(requireContext());
 
         //Recicler view (el mismo que usé en Profile Fragment) para cargar los jobs:
         RecyclerView recyclerView = view.findViewById(R.id.recyclerJobs);
@@ -137,11 +144,16 @@ public class JobsSearchFragment extends Fragment {
     private void searchByStatus() {
         AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
         builder.setTitle("Selecciona estado:")
-                .setItems(new CharSequence[]{"Pendiente", "En curso", "Acabado"}, (dialog, which) -> {
+                .setItems(new CharSequence[]{"Pendiente", "En curso", "Finalizado"}, (dialog, which) -> {
                     switch (which) {
+                        /**
                         case 0: showJobsByFilter("pendiente", null, null); break;
                         case 1: showJobsByFilter("en curso", null, null); break;
-                        case 2: showJobsByFilter("acabado", null, null); break;
+                        case 2: showJobsByFilter("finalizado", null, null); break;
+                         */
+                        case 0: callShowJobByFilter("pendiente", null, null); break;
+                        case 1: callShowJobByFilter("en curso", null, null); break;
+                        case 2: callShowJobByFilter("finalizado", null, null); break;
                     }
                 }).show();
     }
@@ -190,7 +202,10 @@ public class JobsSearchFragment extends Fragment {
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String dni = inputField.getText().toString();
-                    if (!dni.isEmpty()) showJobsByFilter(null, dni, null);
+                    //if (!dni.isEmpty()) showJobsByFilter(null, dni, null); //llamada al entiguo método propio
+
+                    //Ahora se llama al repository:
+                    if (!dni.isEmpty()) callShowJobByFilter(null, dni, null);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -207,16 +222,39 @@ public class JobsSearchFragment extends Fragment {
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String licensePlate = inputField.getText().toString();
-                    if (!licensePlate.isEmpty()) showJobsByFilter(null, null, licensePlate);
+                    //if (!licensePlate.isEmpty()) showJobsByFilter(null, null, licensePlate); //llamada al entiguo método propio
+
+                    //Ahora se llama al repository:
+                    if (!licensePlate.isEmpty()) callShowJobByFilter(null, null, licensePlate);
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
     /**
+     * Llamada al método del repository donde se hace la llamada HTTP:
+     */
+    private void callShowJobByFilter(String estado, String dniCliente, String matriculaVehiculo) {
+        jobRepository.showJobsByFilter(estado, dniCliente, matriculaVehiculo, new JobRepository.JobByFilterShowCallback() {
+            @Override
+            public void onSuccess(List<Job> jobList) {
+                jobs.clear();
+                jobs.addAll(jobList);
+                adapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
+
+    }
+
+    /**
      * Funcion generica para hacer la busqueda, dentro de ella hay un if, y dependiendo de
      * por donde entra, buscará por un campo opor otro
-     */
+
     private void showJobsByFilter(String estado, String dniCliente, String matriculaVehiculo) {
         //primero se recupera el id del mecanico a traves de SP:
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
@@ -227,10 +265,14 @@ public class JobsSearchFragment extends Fragment {
             return;
         }
 
-        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
-
-        //Añadir los campos que incluí a posteriori en trabajo:
-        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos(matricula,clientes(dni))";
+        /**
+         *
+         * llamada al endpoint de trabajos: que recupere todos los datos de los trabajos, todos de los vehículos y todos de los clientes, asi
+         * no hay problema por como están cosntruidas las relaciones en las tablas (ya que aquí hay una relación anidada):
+         */
+/**        String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=*,vehiculos(*,clientes(*))";
+        //Esta tb funciona: ya que la clave es el Id, por eso hay que hacer un INNER JOIN -> !inner
+        //String baseUrl = SUPABASE_URL + "/rest/v1/trabajos?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,mecanico_id,vehiculos!inner(matricula,clientes!inner(dni))";
 
 
         // Filtros dinámicos
@@ -258,7 +300,7 @@ public class JobsSearchFragment extends Fragment {
                 response -> {
                     jobs.clear();
                     if (response.length() == 0) {
-                        String mensaje = "No se encontraron jobs";
+                        String mensaje = "No se encontraron trabajos";
                         if (estado != null && !estado.equals("todos")) {
                             mensaje += " con estado '" + estado + "'";
                         } else if (dniCliente != null && !dniCliente.isEmpty()) {
@@ -283,14 +325,14 @@ public class JobsSearchFragment extends Fragment {
                                 );*/
 
 
-                                Car car = new Car(vehiculoJson.getString("matricula"), customer);
+        /**                        Car car = new Car(vehiculoJson.getString("matricula"), customer);
                                 /**Job job = new Job(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
                                         car
                                 );*/
-                                Job job = new Job(
+         /**                       Job job = new Job(
                                         String.valueOf(trabajoJson.getInt("id")),
                                         trabajoJson.getString("estado"),
                                         trabajoJson.getString("descripcion"),
@@ -328,7 +370,7 @@ public class JobsSearchFragment extends Fragment {
         };
 
         queue.add(request);
-    }
+    }*/
 
 
 }

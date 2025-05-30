@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -25,22 +27,28 @@ import java.util.ArrayList;
 import java.util.List;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import com.android.volley.AuthFailureError;
+import com.bcg.cartaller.Repositories.CustomerRepository;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Desde este fragment el mecánico podrá buscar customers, bien por su dni o por la matrícula de
+ * Desde este fragment el mecánico podrá buscar clientes, bien por su dni o por la matrícula de
  * uno de sus vehículos.
  *
  * SIGUE LA  MISMA ESTRUCTURA QUE JobsSearchFragment.
+ *
+ * Modificado para implementar repository, que será quien contenga los métodos HTTP.
  */
 public class CustomersSearchFragment extends Fragment {
     private RequestQueue queue;
-    private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+    //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
+    //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<Customer> customers = new ArrayList<>();
     private CustomerAdapter adapter;
+
+    //Creo una instancia del repo para poder separar la lógica de la UI:
+    private CustomerRepository customerRepository;
 
     public CustomersSearchFragment() {}
 
@@ -49,6 +57,9 @@ public class CustomersSearchFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_customers_search, container, false);
 
         queue = Volley.newRequestQueue(requireContext());
+
+        //inicializo el repo:
+        customerRepository = new CustomerRepository(requireContext());
 
         //Recicler view (el mismo que usé en Profile Fragment) para cargar los trabajos:
         RecyclerView recyclerView = view.findViewById(R.id.recyclerCustomers);
@@ -67,6 +78,7 @@ public class CustomersSearchFragment extends Fragment {
                         .commit();
             }
 
+            //BOTÓN PARA IR A DONDE AÑADIR UN VEHÍCULO:
             @Override
             public void onAddCarClick(Customer customer) {
                 CarNewFragment fragment = new CarNewFragment();
@@ -81,6 +93,7 @@ public class CustomersSearchFragment extends Fragment {
                         .commit();
             }
 
+            //BOTÓN PARA IR A DONDE MODIFICAR DATOS DE UN CLIENTE:
             @Override
             public void onModifyCustomerClick(Customer customer) {
                 CustomersNewFragment fragment = new CustomersNewFragment();
@@ -108,13 +121,16 @@ public class CustomersSearchFragment extends Fragment {
         return view;
     }
 
-    //añadir el método con las opciones del Dialog, como en la búsqueda de tareas:
-    //antes mostrarDialogBusqueda
+    /**
+     * Desde un Dialog, permite la búsqueda de clientes, mostrando 2 opciones de búsqueda: por dni y por matrícula
+     * Mismo sistema que en en la búsqueda de trabajos.
+     * (antes mostrarDialogBusqueda)
+     */
     public void showSearchDialog() {
         CharSequence[] opciones = {"Por DNI", "Por matrícula"};
 
         new AlertDialog.Builder(getContext())
-                .setTitle("Buscar customer por:")
+                .setTitle("Buscar cliente por:")
                 .setItems(opciones, (dialog, which) -> {
                     switch (which) {
                         case 0: searchByDni(); break;
@@ -127,26 +143,43 @@ public class CustomersSearchFragment extends Fragment {
     //No uso el metodo showDialog para los elementos del xml porque son distintos campos.
     //si me da tiempo modifico la estetica en paso final:
 
-    //antes buscarPorDni
+    //(antes buscarPorDni)
     private void searchByDni() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
         EditText inputField = dialogView.findViewById(R.id.dialogInputText);
         titleDialog.setText("Buscar por DNI");
-        inputField.setHint("Introduce el DNI del customer");
+        inputField.setHint("Introduce el DNI del cliente");
 
         new AlertDialog.Builder(getContext())
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String dni = inputField.getText().toString();
-                    if (!dni.isEmpty()) searchClients("dni", dni);
+                    //if (!dni.isEmpty()) searchClients("dni", dni);
+
+                    //ahora llamamos al repositorio pq es el que maneja la lógica de la búsqueda (HTTP - GET):
+                    if (!dni.isEmpty()) {
+                        customerRepository.searchCustomers("dni", dni, new CustomerRepository.CustomerCallback() {
+                            @Override
+                            public void onSuccess(List<Customer> result) {
+                                customers.clear();
+                                customers.addAll(result);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                Toast.makeText(getContext(), "Error: " + message, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
 
                 })
                 .setNegativeButton("Cancelar", null)
                 .show();
     }
 
-    //antes buscarPorMatricula
+    //(antes buscarPorMatricula)
     private void searchByMatricula() {
         View dialogView = LayoutInflater.from(getContext()).inflate(R.layout.dialog_search, null);
         TextView titleDialog = dialogView.findViewById(R.id.titleDialog);
@@ -158,7 +191,26 @@ public class CustomersSearchFragment extends Fragment {
                 .setView(dialogView)
                 .setPositiveButton("Buscar", (dialog, which) -> {
                     String matricula = inputField.getText().toString();
-                    if (!matricula.isEmpty()) searchClients("matricula", matricula);
+                    //if (!matricula.isEmpty()) searchClients("matricula", matricula);
+
+                    //ahora llamamos al repositorio pq es el que maneja la lógica de la búsqueda (HTTP - GET):
+                    if (!matricula.isEmpty()) {
+                        customerRepository.searchCustomers("matricula", matricula, new CustomerRepository.CustomerCallback() {
+                            @Override
+                            public void onSuccess(List<Customer> result) {
+                                customers.clear();
+                                customers.addAll(result);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            @Override
+                            public void onError(String message) {
+                                Toast.makeText(getContext(), "Error: " + message, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+
 
 
                 })
@@ -170,6 +222,7 @@ public class CustomersSearchFragment extends Fragment {
     /**
      * Funcion para ver los customers (buscarClientes al comienzo)
      */
+    /** VOY A MOVERLA AL REPOSITORY
     private void searchClients(String tipo, String valor) {
         String url;
         if (tipo.equals("dni")) {
@@ -197,7 +250,7 @@ public class CustomersSearchFragment extends Fragment {
                                     clienteJson.optString("nombre", ""),
                                     clienteJson.optString("telefono", "")
                             );*/
-                            Customer customer = new Customer(
+ /**                           Customer customer = new Customer(
                                     clienteJson.getInt("id"),
                                     clienteJson.getString("dni"),
                                     clienteJson.optString("nombre", ""),
@@ -237,5 +290,5 @@ public class CustomersSearchFragment extends Fragment {
             }
         };
         queue.add(request);
-    }
+    }*/
 }

@@ -32,6 +32,7 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bcg.cartaller.Repositories.JobRepository;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -48,20 +49,24 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
+ * MÉTODOS HTTP TRASLADADOS AL REPOSITORY.
+ * AHORA ESTE FRAGMENT MANEJA LA UI, PERO NO LA COMUNICACIÓN CON LA BD.
+ *
+ *
+ * EN ORIGEN:
  * Desde este fragment el mecánico podrá crear trabajos.
  * Debe seleccionar una matrícula ya que están asociados a un vehículo concreto.
- * Si aún no existe ese vehículo, se debe crear en el apartado correspondiente.
- * Lo ideal sería que se pudiera crear desde aqui (en una app profesional), pero yo por ahora lo voy a hacer asi,
- * si me da tiempo, lo añado.
- *
- * Añado los campos que me faltan en el formulario (fecha fin y estado). A mayores de los contemplados al principio,
- * quiero añadir comentarios y subida de imagen desde la app.
+ * Si aún no existe ese vehículo, se debe crear en el apartado correspondiente (desde Clientes).
  */
+
 public class JobsNewFragment extends Fragment {
-    private RequestQueue queue;
-    private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
-    private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
+    //private RequestQueue queue;
+    //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
+    //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private List<String> tareasSeleccionadas = new ArrayList<>();
+
+    //para el repository:
+    private JobRepository jobRepository;
 
     private EditText etLicensePlate, etDescriptionJob, etStartDate, etEndDate, etComments;
     private Button btnSearchCar, btnStartDate, btnEndDate, btnSaveJob, btnAddTask, btnSelectImage, btnModifyJob;
@@ -99,12 +104,18 @@ public class JobsNewFragment extends Fragment {
         btnSelectImage = view.findViewById(R.id.btnSelectImage);
         btnModifyJob = view.findViewById(R.id.modifyJobButton);
 
-        queue = Volley.newRequestQueue(requireContext());
+        //queue = Volley.newRequestQueue(requireContext());
+
+        //inicializo el repository:
+        jobRepository = new JobRepository(requireContext());
 
         btnSearchCar.setOnClickListener(v -> {
             String licensePlate = etLicensePlate.getText().toString().trim();
             if (!licensePlate.isEmpty()) {
-                searchCarByMatricula(licensePlate);
+                //searchCarByMatricula(licensePlate); //era la llamada al método propio
+
+                //Ahora se llama al método que, a su vez, llama al método que está en el repository:
+                callSearchCarByMatricula(licensePlate);
             } else {
                 Toast.makeText(getContext(), "Por favor, introduce la matrícula del vehículo", Toast.LENGTH_SHORT).show();
             }
@@ -127,8 +138,11 @@ public class JobsNewFragment extends Fragment {
             btnModifyJob.setVisibility(View.VISIBLE);
 
             btnModifyJob.setOnClickListener(v -> {
-                // Aquí llamas al método que envíe PUT request a Supabase
-                updateJob(args.getString("trabajo_id"));
+                //updateJob(args.getString("trabajo_id")); //era la llamada al metod propio
+
+                //Llamada al método que, a su vez, encapsula la llamada a JobsRepository,
+                //que es quien realiza ahora el HTTP - PATCH
+                callUpdateJob(args.getString("trabajo_id"));
             });
 
         } else {
@@ -138,13 +152,20 @@ public class JobsNewFragment extends Fragment {
             //Este boton solo funciona si se ha elegido una matri (!=0):
             btnSaveJob.setOnClickListener(v -> {
                 if (carIdSelect != -1) {
+                    /**
                     String description = etDescriptionJob.getText().toString().trim();
                     String startDate = etStartDate.getText().toString().trim();
                     String endDate = etEndDate.getText().toString().trim();
                     String status = spinnerStatus.getSelectedItem().toString();
                     String comment = etComments.getText().toString().trim();
 
-                    saveJob(carIdSelect, description, startDate, endDate, status, comment, base64Image, tareasSeleccionadas);
+                    //Esta era la llamada al método de la propia lase para guardar un trabajo.
+                    //saveJob(carIdSelect, description, startDate, endDate, status, comment, base64Image, tareasSeleccionadas);
+                     */
+
+                    //Ahora se llama al método que hay en JobRepository (con un método intermedio):
+                    callSaveJob(); // en esta clase se encapsula la llamada al repository
+
                 } else {
                     Toast.makeText(getContext(), "Busca y selecciona un vehículo primero", Toast.LENGTH_LONG).show();
                 }
@@ -199,7 +220,8 @@ public class JobsNewFragment extends Fragment {
 
         // Al pulsar este botón se llama al metodo que carga en pantalla las tareas tipo guardadas anteriormente en BD:
         btnAddTask.setOnClickListener(v ->
-                loadTypeTask()
+                //loadTypeTask()
+                callLoadTypeTask() //LLAMADA AL METODO QUE, A SU VEZ, LLAMA AL REPOSTORIO PARA CARGAR (GET) TAREAS TIPO
         );
 
 /**
@@ -220,10 +242,6 @@ public class JobsNewFragment extends Fragment {
 
         return view;
     }
-
-    /**
-     * PARA LOS CAMPOS NUEVOS: SPINNER PARA EL ESTADO, IMAGEN Y COMENTARIOS
-     */
 
     //para que el usuario pueda seleccionar una foto de su galeria de imágenes y subirla a la app:
     private void selectImage() {
@@ -255,96 +273,51 @@ public class JobsNewFragment extends Fragment {
     }
 
     /**
-     * Método para buscar una matrícula ya guardada en BD. Si no se encuentra, no deja guardar el trabajo.
-     * Si el vehículo aún no existe, hay que crearlo previamente.
-     * @param matricula
+     * Desde este método se llama a JobsRepository, que es donde está el método para cargar (GET) las tareas preestablecidas
      */
-    private void searchCarByMatricula(String matricula) {
-        String url = SUPABASE_URL + "/rest/v1/vehiculos?select=id,marca,modelo&matricula=eq." + matricula;
-
-        JsonArrayRequest request = new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    if (response.length() > 0) {
-                        try {
-                            JSONObject vehiculoJson = response.getJSONObject(0);
-                            carIdSelect = vehiculoJson.getInt("id");
-                            if (carIdSelect != -1){
-                                String marca = vehiculoJson.getString("marca");
-                                String modelo = vehiculoJson.getString("modelo");
-                                Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
-                            }
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Toast.makeText(getContext(), "Error al procesar información del vehículo", Toast.LENGTH_SHORT).show();
-                            // Como hubo un error, vuelve a ser -1:
-                            carIdSelect = -1;
-                        }
-                    } else {
-                        Toast.makeText(getContext(), "No se encontró ningún vehículo con la matrícula: " + matricula + ". Por favor, añádelo desde la sección de Clientes.", Toast.LENGTH_LONG).show();
-                        // Como no se ha seleccionado, vuelve a ser -1:
-                        carIdSelect = -1;
-                    }
-                },
-                error -> {
-                    Toast.makeText(getContext(), "Error al buscar vehículo", Toast.LENGTH_SHORT).show();
-                    Log.e("Volley", "Error al buscar vehículo", error);
-                }
-        ) {
+    private void callLoadTypeTask() {
+        jobRepository.loadTypeTasks(new JobRepository.TypeTaskLoadCallback() {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
-                String token = prefs.getString("access_token", "");
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", API_ANON_KEY);
-                headers.put("Authorization", "Bearer " + token);
-                return headers;
+            public void onLoaded(List<String> tareas) {
+                showDialogSelectTask(tareas);
             }
-        };
-        queue.add(request);
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
 
     /**
-     * Método para, a través de una consulta GET a la BD de supabase, conseguir el listado de todas las tareas guardadas
+     * Desde este método se llama a JobsRepository, que es donde está el método para buscar coches por matrícula
+     * @param licensePlate
      */
-    private void loadTypeTask() {
-        String url = SUPABASE_URL + "/rest/v1/tareas_tipo?select=descripcion";
-
-        JsonArrayRequest request = new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    List<String> tareas = new ArrayList<>(); //debe ser una lista de strings porque no es una clase POJO
-                    for (int i = 0; i < response.length(); i++) {
-                        try {
-                            tareas.add(response.getJSONObject(i).getString("descripcion"));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    //Lllama al método que permite seleccionar las tareas:
-                    showDialogSelectTask(tareas);
-                },
-                error -> {
-                    Toast.makeText(getContext(), "Error al cargar tareas guardadas en base de datos", Toast.LENGTH_SHORT).show();
-                    Log.e("Volley", "Error cargando tareas guardadas en base de datos", error);
-                }) {
+    private void callSearchCarByMatricula(String licensePlate) {
+        jobRepository.searchCarByMatricula(licensePlate, new JobRepository.CarSearchCallback() {
             @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
-                String token = prefs.getString("access_token", "");
-                Map<String, String> headers = new HashMap<>();
-                headers.put("apikey", API_ANON_KEY);
-                headers.put("Authorization", "Bearer " + token);
-                return headers;
+            public void onFound(int carId, String marca, String modelo) {
+                carIdSelect = carId;
+                Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
             }
-        };
-        queue.add(request);
+
+            @Override
+            public void onNotFound() {
+                carIdSelect = -1;
+                Toast.makeText(getContext(), "No se encontró ningún vehículo con esa matrícula. Añádelo desde Clientes.", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(String message) {
+                carIdSelect = -1;
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
 
 
     /**
@@ -369,7 +342,219 @@ public class JobsNewFragment extends Fragment {
                 .show();
     }
 
-    //guardarTareas():
+    /**
+     * LLAMADA AL REPOSITORY JobRepository, que es quien ejecuta el método HTTP - POST para guardar un nuevo trabajo
+     */
+    private void callSaveJob() {
+        SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
+        String mecanicoId = prefs.getString("mecanico_id", null);
+
+        if (mecanicoId == null) {
+            Toast.makeText(getContext(), "ID mecánico no encontrado. Por favor, inicie sesión nuevamente.", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String descripcion = etDescriptionJob.getText().toString().trim();
+        String fechaInicio = etStartDate.getText().toString().trim();
+        String fechaFin = etEndDate.getText().toString().trim();
+        String estado = spinnerStatus.getSelectedItem().toString();
+        String comentarios = etComments.getText().toString().trim();
+
+        /** me dan error los campos null porque postgree no los maneja bien
+        JSONObject jobJson = new JSONObject();
+        try {
+            jobJson.put("vehiculo_id", carIdSelect);
+            jobJson.put("mecanico_id", mecanicoId);
+            jobJson.put("descripcion", descripcion);
+            jobJson.put("fecha_inicio", fechaInicio);
+            if (!fechaFin.isEmpty()) jobJson.put("fecha_fin", fechaFin);
+            if (!estado.isEmpty()) jobJson.put("estado", estado);
+            if (!comentarios.isEmpty()) jobJson.put("comentarios", comentarios);
+            if (base64Image != null) jobJson.put("imagen", "data:image/jpeg;base64," + base64Image);
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error preparando datos del trabajo", Toast.LENGTH_SHORT).show();
+            return;
+        }*/
+        JSONObject jobJson = new JSONObject();
+        try {
+            jobJson.put("vehiculo_id", carIdSelect);
+            jobJson.put("mecanico_id", mecanicoId);
+            jobJson.put("descripcion", descripcion);
+            jobJson.put("fecha_inicio", fechaInicio);
+
+            if (!fechaFin.isEmpty()) {
+                jobJson.put("fecha_fin", fechaFin);
+            } else {
+                jobJson.put("fecha_fin", JSONObject.NULL); // para que no falle en postgree
+            }
+
+            if (!estado.isEmpty()) {
+                jobJson.put("estado", estado);
+            }
+
+            if (!comentarios.isEmpty()) {
+                jobJson.put("comentarios", comentarios);
+            } else {
+                jobJson.put("comentarios", JSONObject.NULL); // para que no falle en postgree
+            }
+
+            if (base64Image != null && !base64Image.isEmpty()) {
+                jobJson.put("imagen", "data:image/jpeg;base64," + base64Image);
+            } else {
+                jobJson.put("imagen", JSONObject.NULL); // para que no falle en postgree
+            }
+
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error preparando datos del trabajo", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+
+        jobRepository.saveJob(jobJson, new JobRepository.JobSaveCallback() { //LLLAMADA AL REPOSITORY
+            @Override
+            public void onSuccess(int jobId) {
+                Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + jobId + ")", Toast.LENGTH_SHORT).show();
+                if (!tareasSeleccionadas.isEmpty()) {
+                    //saveTask(jobId, tareasSeleccionadas); //metodo directo para guardar tareas
+                    callSaveTask(jobId); //llamada al metodo que a su vez llama al repository, que es quien hace la llamada http
+
+                }
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    /**
+     * LLAMADA AL REPOSITOY JobRepository, que es quien ejecuta el método HTTP - POST para guardar las tareas
+     */
+    private void callSaveTask(int jobId){
+        jobRepository.saveTasks(jobId, tareasSeleccionadas, new JobRepository.TaskSaveCallback() {
+            @Override
+            public void onSuccess() {
+                Log.d("SUPABASE", "Tareas guardadas correctamente.");
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    /**
+     * LLAMADA AL REPOSITORY JobRepository, que es quien ejecuta el método HTTP - PATCH para actualizar un trabajo existente
+     */
+/**    private void callUpdateJob(String jobId) {
+        JSONObject data = new JSONObject();
+        try {
+            data.put("descripcion", etDescriptionJob.getText().toString());
+            data.put("fecha_inicio", etStartDate.getText().toString());
+            data.put("fecha_fin", etEndDate.getText().toString());
+            data.put("estado", spinnerStatus.getSelectedItem().toString());
+            data.put("comentarios", etComments.getText().toString());
+            if (base64Image != null) data.put("imagen", "data:image/jpeg;base64," + base64Image);
+        } catch (JSONException e) {
+            Toast.makeText(getContext(), "Error al preparar la actualización", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        jobRepository.updateJob(jobId, data, new JobRepository.JobUpdateCallback() {
+            @Override
+            public void onSuccess() {
+                Toast.makeText(getContext(), "Trabajo actualizado correctamente", Toast.LENGTH_SHORT).show();
+                requireActivity().getSupportFragmentManager().popBackStack();
+            }
+
+            @Override
+            public void onError(String message) {
+                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }*/
+private void callUpdateJob(String jobId) {
+    JSONObject data = new JSONObject();
+
+    try {
+        String descripcion = etDescriptionJob.getText().toString().trim();
+        if (descripcion.isEmpty()) {
+            Toast.makeText(getContext(), "La descripción no puede estar vacía", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        data.put("descripcion", descripcion);
+
+        String fechaInicio = etStartDate.getText().toString().trim();
+        if (fechaInicio.isEmpty()) {
+            Toast.makeText(getContext(), "La fecha de inicio es obligatoria", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        data.put("fecha_inicio", fechaInicio);
+
+        String fechaFin = etEndDate.getText().toString().trim();
+        if (!fechaFin.isEmpty() && !fechaFin.equalsIgnoreCase("null")) {
+            data.put("fecha_fin", fechaFin);
+        } else {
+            data.put("fecha_fin", JSONObject.NULL);
+        }
+
+        String comentarios = etComments.getText().toString().trim();
+        if (!comentarios.isEmpty() && !comentarios.equalsIgnoreCase("null")) {
+            data.put("comentarios", comentarios);
+        } else {
+            data.put("comentarios", JSONObject.NULL);
+        }
+
+        String estado = spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString().trim() : "";
+        if (!estado.isEmpty() && !estado.equalsIgnoreCase("null")) {
+            data.put("estado", estado);
+        } else {
+            data.put("estado", JSONObject.NULL);
+        }
+
+        if (base64Image != null && !base64Image.isEmpty()) {
+            data.put("imagen", "data:image/jpeg;base64," + base64Image);
+        } else {
+            data.put("imagen", JSONObject.NULL);
+        }
+
+        Log.d("UPDATE_JSON", data.toString());
+
+    } catch (JSONException e) {
+        Toast.makeText(getContext(), "Error al preparar la actualización", Toast.LENGTH_SHORT).show();
+        return;
+    }
+
+    jobRepository.updateJob(jobId, data, new JobRepository.JobUpdateCallback() {
+        @Override
+        public void onSuccess() {
+            Toast.makeText(getContext(), "Trabajo actualizado correctamente", Toast.LENGTH_SHORT).show();
+            //envia una señal al fragment anterior (JobsDetailFragment) que es donde veo detalles del trabajo:
+            Bundle result = new Bundle();
+            result.putBoolean("trabajo_actualizado", true);
+            getParentFragmentManager().setFragmentResult("update_success", result);
+
+            //cierro este fragment y vuelvo atrás cuando el trabajo se ha actualizado:
+            requireActivity().getSupportFragmentManager().popBackStack();
+        }
+
+        @Override
+        public void onError(String message) {
+            Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+        }
+    });
+}
+
+
+
+
+
+    /**
+     * guardarTareas()
+     * Ya no se hace desde aqui, sino que se hace en el repository
+
     private void saveTask(int trabajoId, List<String> tareasDescripcion) {
         String urlTareas = SUPABASE_URL + "/rest/v1/tareas";
         for (String descripcionTarea : tareasDescripcion) {
@@ -414,9 +599,12 @@ public class JobsNewFragment extends Fragment {
                 e.printStackTrace();
             }
         }
-    }
+    } */
+
+
 
     /**
+     * Desactualizado, ahora se hace desde el repository
      * GUARDAR/CREAR UN NUEVO TRABAJO - guardarTrabajo
      * @param vehiculoId
      * @param descripcion
@@ -425,6 +613,7 @@ public class JobsNewFragment extends Fragment {
      *
      * Añadir los nuevos campos en el guardado del trabajo
      */
+    /**
     private void saveJob(int vehiculoId, String descripcion, String fechaInicio, String fechaFin, String estado, String comentarios, String base64Imagen, List<String> tareasDescripcion) {
         if (vehiculoId == -1) {
             Toast.makeText(getContext(), "Por favor, selecciona un vehículo primero", Toast.LENGTH_LONG).show();
@@ -547,7 +736,7 @@ public class JobsNewFragment extends Fragment {
             //insertado,para luego poder vincularle las tareas) puedo usar StringRequest y return=representation en las cabeceras,
             // que hace que Supabase devuelva un JSON. Además, hay que hacer un parseo a JSONarray:
 
-            StringRequest request = new StringRequest(
+/**            StringRequest request = new StringRequest(
                     Request.Method.POST,
                     urlTrabajos,
                     responseString -> {
@@ -616,13 +805,18 @@ public class JobsNewFragment extends Fragment {
             Toast.makeText(getContext(), "Error preparando datos del trabajo", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-    }
+    }*/
+
+
+
+
 
     /**
+     * AHORA ESTE MÉTODO SE EJECUTA EN JobREPOSITORY
      * Método que permite actualizar un tabajo ya existente en BD
      * Uso PATCH en lugar de PUT
      * @param id
-     */
+
     private void updateJob(String id) {
         try {
             JSONObject data = new JSONObject();
@@ -678,7 +872,7 @@ public class JobsNewFragment extends Fragment {
             Toast.makeText(getContext(), "Error al preparar la actualización", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
         }
-    }
+    }*/
 
 
 
