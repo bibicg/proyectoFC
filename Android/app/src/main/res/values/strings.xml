@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">CarTaller</string>
 
+    <!--login-->
+    <string name="button_registration">Regístrate</string>
+    <string name="button_login">Iniciar sesión</string>
+
     <!--drawer menu-->
     <string name="nav_customers">Clientes</string>
     <string name="nav_jobs">Trabajos</string>
@@ -9,6 +13,8 @@
 
 
     <!--Profile-->
+    <string name="app_logo">Logo Cartaller</string>
+    <string name="descrip_icon_arrow">Icono marcador flecha amarilla</string>
     <string name="profile_title">Perfil</string>
     <string name="user_username">USERNAME</string>
     <string name="view_details">Ver detalles</string>

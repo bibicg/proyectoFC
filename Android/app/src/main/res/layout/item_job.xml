@@ -14,14 +14,31 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <TextView
-            android:id="@+id/textViewJobId"
+
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/label_job_id"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/black" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:layout_marginEnd="4dp"
+                android:src="@drawable/flechita_amarilla"
+                android:contentDescription="@string/descrip_icon_arrow"
+                app:tint="@color/yellow_cartaller" />
+
+            <TextView
+                android:id="@+id/textViewJobId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_job_id"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="@color/black" />
+        </LinearLayout>
+
 
         <TextView
             android:id="@+id/textViewStatus"
@@ -32,6 +49,7 @@
             android:layout_marginTop="4dp"
             android:textSize="14sp" />
 
+
         <TextView
             android:id="@+id/textViewLicensePlate"
             android:layout_width="wrap_content"
@@ -40,6 +58,7 @@
             android:layout_marginTop="4dp"
             android:textColor="@color/black"
             android:textSize="14sp" />
+
 
         <TextView
             android:id="@+id/textViewDniCustomer"
@@ -51,5 +70,6 @@
             android:textSize="14sp" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>
+
 
 

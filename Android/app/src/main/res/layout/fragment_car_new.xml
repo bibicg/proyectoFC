@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -69,10 +70,12 @@
             android:layout_height="wrap_content"
             android:text="Guardar vehículo"
             style="@style/Widget.MaterialComponents.Button"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/black"
             android:icon="@drawable/check_32_negro"
             app:iconSize="32dp"
             app:iconPadding="8dp"
-            android:iconTint="@android:color/white"
+            app:iconTint="@color/yellow_cartaller"
             android:layout_marginTop="8dp"/>
     </LinearLayout>
 </ScrollView>
