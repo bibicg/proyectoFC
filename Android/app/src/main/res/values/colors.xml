@@ -4,5 +4,11 @@
     <color name="white">#FFFFFF</color>
     <color name="light_gray">#F5F5F5</color>
     <color name="hint_gray">#88000000</color>
+
+    <!-- Amplio la paleta, el amrarillo corporativo es poco accesible -->
+    <color name="yellow_accessible">#C9A300</color>
+    <color name="golden_toast">#A67C00</color>
+    <color name="yellow_background_soft">#FFF4CC</color>
+
 </resources>
 

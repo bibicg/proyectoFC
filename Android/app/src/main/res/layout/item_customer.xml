@@ -8,15 +8,31 @@
     android:layout_margin="12dp"
     android:elevation="4dp">
 
-    <TextView
-        android:id="@+id/textViewCustomerDni"
-        android:layout_width="match_parent"
+
+    <LinearLayout
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/label_dni_placeholder"
-        android:textStyle="bold"
-        android:textSize="16sp"
-        android:textColor="#000000"
-        android:layout_marginBottom="4dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="4dp">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_marginEnd="4dp"
+            android:src="@drawable/flechita_amarilla"
+            android:contentDescription="@string/descrip_icon_arrow"
+            app:tint="@color/yellow_cartaller" />
+
+        <TextView
+            android:id="@+id/textViewCustomerDni"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/label_dni_placeholder"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:textColor="#000000" />
+    </LinearLayout>
 
     <TextView
         android:id="@+id/textViewCustomerName"
@@ -45,29 +61,37 @@
         android:textColor="#666666"
         android:layout_marginBottom="12dp" />
 
-    <Button
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/modifyCustomerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_edit_customer"
-        android:drawableLeft="@drawable/person_edit_32_negro"
-        app:iconSize="32dp"
         android:textAllCaps="false"
-        android:background="@color/black"
-        android:textColor="@color/black"
-        android:paddingVertical="12dp"
+        android:textColor="@color/white"
+        android:icon="@drawable/flechita_amarilla"
+        android:backgroundTint="@color/black"
+
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:iconSize="24dp"
+        app:cornerRadius="0dp"
         android:layout_marginBottom="8dp" />
 
-    <Button
+
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/addNewCarButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/button_add_car"
-        android:drawableLeft="@drawable/directions_car_32_negro"
-        app:iconSize="32dp"
         android:textAllCaps="false"
-        android:background="@color/black"
-        android:textColor="@color/black"
-        android:paddingVertical="12dp" />
-
+        android:textColor="@color/white"
+        android:backgroundTint="@color/black"
+        android:icon="@drawable/directions_car_32_negro"
+        android:iconTint="@color/yellow_cartaller"
+        app:iconGravity="textStart"
+        app:iconPadding="12dp"
+        app:iconSize="24dp"
+        app:cornerRadius="0dp" />
 </LinearLayout>
+

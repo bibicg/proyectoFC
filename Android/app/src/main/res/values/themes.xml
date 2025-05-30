@@ -17,6 +17,11 @@
         <!-- Botones-->
         <item name="android:colorButtonNormal">#FFD400</item>
         <item name="android:textColorPrimary">#000000</item>
+
+        <!--campos rellenables con linea debajo,-->
+        <item name="colorControlNormal">@color/hint_gray</item>  <!-- Gris sin enfocar -->
+        <item name="colorControlActivated">@color/yellow_cartaller</item> <!-- Amarillo al enfocar -->
+
     </style>
 
     <!-- Tema principal -->

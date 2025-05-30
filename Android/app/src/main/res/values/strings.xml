@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">CarTaller</string>
 
+    <!--login-->
+    <string name="button_registration">Regístrate</string>
+    <string name="button_login">Iniciar sesión</string>
+
     <!--drawer menu-->
     <string name="nav_customers">Clientes</string>
     <string name="nav_jobs">Trabajos</string>
@@ -9,6 +13,8 @@
 
 
     <!--Profile-->
+    <string name="app_logo">Logo Cartaller</string>
+    <string name="descrip_icon_arrow">Icono marcador flecha amarilla</string>
     <string name="profile_title">Perfil</string>
     <string name="user_username">USERNAME</string>
     <string name="view_details">Ver detalles</string>
@@ -21,6 +27,7 @@
     <string name="active_jobs_title">Trabajos activos asignados</string>
 
     <!--CUSTOMER -->
+    <string name="icon_customer">Icono cliente</string>
     <string name="label_dni_placeholder">DNI: ---</string>
     <string name="label_name_placeholder">Nombre: ---</string>
     <string name="label_phone_placeholder">Teléfono: ---</string>
@@ -51,19 +58,24 @@
     <string name="label_customer_dni">Cliente DNI: 12345678Z</string>
 
     <!--fragment jobs new -->
+    <string name="icon_job">Icono reparacion</string>
     <string name="hint_license_plate">Matrícula del vehículo</string>
     <string name="hint_job_description">Descripción del trabajo</string>
     <string name="button_select_start_date">Seleccionar Fecha</string>
-    <string name="hint_start_date">Fecha de inicio</string>
-    <string name="button_select_end_date">Fecha fin</string>
-    <string name="hint_end_date">Fecha de finalización</string>
+    <string name="hint_start_date">Introduce fecha inicio:</string>
+    <string name="button_select_end_date">Fecha fin:</string>
+    <string name="hint_end_date">Introduce fecha fin:</string>
     <string name="hint_status">Estado</string>
     <string name="hint_comments">Comentarios del mecánico</string>
+
     <string name="button_upload_image">Subir Imagen</string>
+    <string name="button_change_image">Cambiar Imagen</string>
+
     <string name="label_tasks">Tareas:</string>
     <string name="button_add_task">Añadir Tarea</string>
     <string name="button_save_job">Guardar Trabajo</string>
-    <string name="button_modify_job">Guardar modificaciones</string>
+    <string name="button_modify_job">Ir a actualizar</string>
+    <string name="button_save_update_job">Guardar modificación</string>
     <string name="label_car_info">Información del vehículo</string>
 
     <!--fragment job detail -->
@@ -84,6 +96,9 @@
     <string name="label_status_detail">Estado</string>
     <string name="label_license_plate_detail">Matrícula</string>
     <string name="label_customer_dni_detail">DNI Cliente</string>
+
+    <!--fragment new car-->
+    <string name="icon_vehicle">Icono coche</string>
 
 
 
