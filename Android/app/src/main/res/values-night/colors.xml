@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="yellow_cartaller">#C9A300</color>
+    <color name="black">#FFFFFF</color> <!-- Texto blanco en modo oscuro -->
+    <color name="white">#000000</color>
+    <color name="light_gray">#222222</color>
+    <color name="hint_gray">#88FFFFFF</color>
+
+    <color name="yellow_accessible">#B38F00</color>
+    <color name="golden_toast">#A67C00</color>
+    <color name="yellow_background_soft">#332900</color>
+
+
+
+</resources>

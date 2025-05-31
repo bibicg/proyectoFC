@@ -22,8 +22,12 @@
         <item name="colorControlNormal">@color/hint_gray</item>  <!-- Gris sin enfocar -->
         <item name="colorControlActivated">@color/yellow_cartaller</item> <!-- Amarillo al enfocar -->
 
+
     </style>
 
     <!-- Tema principal -->
     <style name="Theme.CarTaller" parent="Base.Theme.CarTaller" />
+
+
+
 </resources>

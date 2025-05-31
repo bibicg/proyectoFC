@@ -10,6 +10,7 @@ import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
+import com.bcg.cartaller.Adapters.ThemeUtils;
 import com.google.android.material.navigation.NavigationView;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,6 +22,9 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        //aplico el tema:
+        ThemeUtils.applyTheme(this);
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -52,6 +56,10 @@ public class MainActivity extends AppCompatActivity {
                 selectedFragment = new JobsFragment();
             } else if (itemId == R.id.nav_profile) { // -> Perfil
                 selectedFragment = new ProfileFragment();
+            } else if (itemId == R.id.nav_change_theme) { // -> Modo dia/noche
+                //llamada al cambio de tema;
+                ThemeUtils.toggleTheme(this);
+                return true;
             } else if (itemId == R.id.nav_logout) { // -> Cerrar sesión
                 logoutUser();
                 return true;
