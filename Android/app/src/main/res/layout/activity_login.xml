@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/captura_inicio_fondo_logo"
+    android:background="@drawable/login_background_logo_centro"
     tools:context=".LoginActivity">
 
     <androidx.constraintlayout.widget.Guideline

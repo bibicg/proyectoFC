@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:scaleType="fitCenter"
         android:adjustViewBounds="true"
-        android:src="@drawable/captura_logo_fondo_negro_largo"
+        android:src="@drawable/profile_header"
         android:contentDescription="@string/app_logo"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
