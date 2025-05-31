@@ -1,18 +1,32 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/light_gray"
-    tools:context=".ProfileActivity">
+    tools:context=".ProfileFragment">
 
+    <!-- Dejo la imagen arriba fuera del scroll para que siemrpe se mantenga ahi -->
+    <ImageView
+        android:id="@+id/appBannerLogo"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:src="@drawable/captura_logo_fondo_negro_largo"
+        android:contentDescription="@string/app_logo"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Scroll debajo del logo -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBannerLogo"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -22,7 +36,6 @@
             android:layout_height="wrap_content"
             android:padding="24dp">
 
-            <!-- Bienvenida -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/welcome"
                 android:layout_width="wrap_content"
@@ -45,7 +58,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Nombre de usuario -->
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
@@ -68,21 +80,7 @@
                 app:layout_constraintTop_toBottomOf="@id/userName"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
-
-            <!-- Logo en vez de botón -->
-            <!--app:tint="@color/yellow_cartaller"-->
-            <ImageView
-                android:id="@+id/appLogo"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_marginTop="16dp"
-                android:src="@drawable/iconos_cliente_bicolor_181725_1"
-                android:contentDescription="@string/app_logo"
-                app:layout_constraintTop_toBottomOf="@id/userUsername"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent" />
-
-            <!-- Título trabajos -->
+            
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/jobsTitle"
                 android:layout_width="wrap_content"
@@ -94,7 +92,7 @@
                 android:layout_marginTop="32dp"
                 android:textAlignment="center"
                 android:gravity="center"
-                app:layout_constraintTop_toBottomOf="@id/appLogo"
+                app:layout_constraintTop_toBottomOf="@id/userUsername"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
@@ -109,7 +107,6 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
 
-            <!-- Lista de trabajos -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerJobs"
                 android:layout_width="match_parent"
@@ -121,10 +118,8 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.core.widget.NestedScrollView>
-
 </androidx.constraintlayout.widget.ConstraintLayout>
 
 
