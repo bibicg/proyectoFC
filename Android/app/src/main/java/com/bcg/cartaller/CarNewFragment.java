@@ -1,5 +1,6 @@
 package com.bcg.cartaller;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -123,7 +124,14 @@ public class CarNewFragment extends Fragment {
         int clienteId = getArguments() != null ? getArguments().getInt("cliente_id", -1) : -1;
 
         if (matricula.isEmpty() || marca.isEmpty() || modelo.isEmpty() || clienteId == -1) {
-            Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(getContext(), "Completa todos los campos", Toast.LENGTH_SHORT).show();
+            //sustituyo el toast por un dialogo que es más claro para el usuario:
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Advertencia")
+                    .setMessage("Debes completar todos los campos")
+                    .setIcon(R.drawable.warning_dialog)
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .show();
             return;
         }
 
@@ -132,7 +140,14 @@ public class CarNewFragment extends Fragment {
             try {
                 anio = Integer.parseInt(anioStr);
             } catch (NumberFormatException e) {
-                Toast.makeText(getContext(), "El año debe ser un número válido", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "El año debe ser un número válido", Toast.LENGTH_SHORT).show();
+                //sustituyo el toast por un dialogo que es más claro para el usuario:
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Advertencia")
+                        .setMessage("El año debe ser un número válido")
+                        .setIcon(R.drawable.warning_dialog)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .show();
                 return;
             }
         }
@@ -157,13 +172,28 @@ public class CarNewFragment extends Fragment {
         carRepository.saveCar(carJson, new CarRepository.CarSaveCallback() {
             @Override
             public void onSuccess() {
-                Toast.makeText(getContext(), "Vehículo guardado con éxito", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Vehículo guardado con éxito", Toast.LENGTH_SHORT).show();
+                //sustituyo el toast por un dialogo que es más claro para el usuario:
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Vehículo guardado con éxito")
+                        .setMessage("Marca: " + marca + "\nModelo: " + modelo)
+                        .setIcon(R.drawable.ok_dialog)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .show();
+
                 requireActivity().getSupportFragmentManager().popBackStack();
             }
 
             @Override
             public void onError(String message) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                //sustituyo el toast por un dialogo que es más claro para el usuario:
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Error")
+                        .setMessage("")
+                        .setIcon(R.drawable.error_dialog)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .show();
             }
         });
     }

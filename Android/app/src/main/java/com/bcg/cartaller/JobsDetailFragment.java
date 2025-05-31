@@ -27,10 +27,12 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.bcg.cartaller.Repositories.JobRepository;
 
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,6 +46,7 @@ public class JobsDetailFragment extends Fragment {
     private RequestQueue queue;
     private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
     private TextView tvDescription, tvStartDate, tvEndDate, tvStatus, tvComments, tvLicensePlate, tvDniCustomer;
+    private TextView tvTaskTitle, tvTaskList;
     private ImageView ivJob;
     private Button btnUpdate, btnDelete;
 
@@ -56,6 +59,8 @@ public class JobsDetailFragment extends Fragment {
         tvEndDate = view.findViewById(R.id.textViewEndDate);
         tvStatus = view.findViewById(R.id.textViewStatus);
         tvComments = view.findViewById(R.id.textViewComments);
+        tvTaskTitle = view.findViewById(R.id.textViewTaskTitle);
+        tvTaskList = view.findViewById(R.id.textViewTaskList);
         tvLicensePlate = view.findViewById(R.id.textViewLicensePlate);
         tvDniCustomer = view.findViewById(R.id.textViewDni);
         ivJob = view.findViewById(R.id.imageViewJob);
@@ -71,8 +76,14 @@ public class JobsDetailFragment extends Fragment {
             tvEndDate.setText(args.getString("fecha_fin", ""));
             tvStatus.setText(args.getString("estado", ""));
             tvComments.setText(args.getString("comentarios", ""));
+            //tvTaskTitle.setText(args.getString("descripcion", ""));
+            tvTaskList.setText(args.getString("tareas", ""));
             tvLicensePlate.setText(args.getString("matricula", ""));
             tvDniCustomer.setText(args.getString("dni_cliente", ""));
+
+            //para mostrar las tareas:
+            int jobId = Integer.parseInt(args.getString("trabajo_id", "0"));
+            loadTasksForJob(jobId); //llamada al método
 
             //Para asegurar que la img se vea tanto si la hay como si no:
             String base64Image = args.getString("imagen", null);
@@ -86,17 +97,19 @@ public class JobsDetailFragment extends Fragment {
                     byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
                     if (bitmap != null) {
+                        ivJob.setVisibility(View.VISIBLE); //iv visible solo si hay imagen asociada
                         ivJob.setImageBitmap(bitmap);
                     } else {
-                        ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                        ivJob.setVisibility(View.GONE); //no muestro el iv x defecto si no hay imagen real
                     }
                 } catch (IllegalArgumentException e) {
                     Log.e("IMAGEN", "Base64 malformado: " + e.getMessage());
-                    ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                    ivJob.setVisibility(View.GONE);
                 }
             } else {
-                ivJob.setImageResource(R.drawable.iconos_coche_peque_bicolor);
+                ivJob.setVisibility(View.GONE); //no muestro el iv x defecto si no hay imagen real
             }
+
 
 
             /**
@@ -270,7 +283,37 @@ public class JobsDetailFragment extends Fragment {
         queue.add(request);
     }
 
+    /**
+     * Método que llama al repository, para poder mostrar las tareas asociadas al trabajo
+     */
+    private void loadTasksForJob(int jobId) {
+        JobRepository jobRepository = new JobRepository(requireContext());
 
+        jobRepository.getTasksByJobId(jobId, new JobRepository.TaskLoadCallback() {
+            @Override
+            public void onSuccess(List<String> tareas) {
+                if (tareas.isEmpty()) {
+                    tvTaskTitle.setVisibility(View.GONE);
+                    tvTaskList.setVisibility(View.GONE);
+                    return;
+                }
 
+                StringBuilder sb = new StringBuilder();
+                for (String tarea : tareas) {
+                    sb.append("• ").append(tarea).append("\n");
+                }
+
+                tvTaskTitle.setVisibility(View.VISIBLE);
+                tvTaskList.setVisibility(View.VISIBLE);
+                tvTaskList.setText(sb.toString());
+            }
+
+            @Override
+            public void onError(String message) {
+                tvTaskTitle.setText("Tareas: error al cargar");
+                tvTaskList.setText("");
+            }
+        });
+    }
 
 }

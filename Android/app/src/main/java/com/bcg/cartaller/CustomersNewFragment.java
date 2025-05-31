@@ -186,7 +186,7 @@ public class CustomersNewFragment extends Fragment {
             customerRepository.checkDniExists(dni, new CustomerRepository.DniCheckCallback() {
                 @Override
                 public void onExists() {
-                    Toast.makeText(getContext(), "Ya existe un customer con ese DNI", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Ya existe un cliente con ese DNI", Toast.LENGTH_SHORT).show();
                     btnSaveCustomer.setEnabled(true);
                 }
 
@@ -205,7 +205,9 @@ public class CustomersNewFragment extends Fragment {
                         public void onSuccess() {
                             btnSaveCustomer.setEnabled(true);
                             new AlertDialog.Builder(getContext())
-                                    .setTitle("Cliente guardado")
+                                    .setTitle("Cliente guardado con éxito")
+                                    .setMessage("DNI Cliente: " + dni)
+                                    .setIcon(R.drawable.ok_dialog)
                                     .setPositiveButton("OK", (dialog, which) -> {
                                         dialog.dismiss();
                                         cleanForm();
@@ -218,7 +220,8 @@ public class CustomersNewFragment extends Fragment {
                             btnSaveCustomer.setEnabled(true);
                             new AlertDialog.Builder(getContext())
                                     .setTitle("Error")
-                                    .setMessage(message)
+                                    .setMessage("El cliente no se ha guardado")
+                                    .setIcon(R.drawable.error_dialog)
                                     .setPositiveButton("OK", null)
                                     .show();
                         }
