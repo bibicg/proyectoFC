@@ -22,6 +22,11 @@
             android:icon="@drawable/perfil"
             android:checkable="true"
             app:showAsAction="never" />
+
+        <item
+            android:id="@+id/nav_change_theme"
+            android:title="Cambiar Tema"
+            android:icon="@drawable/theme_day_night" />
     </group>
 
     <item
