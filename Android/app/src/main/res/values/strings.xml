@@ -59,14 +59,15 @@
 
     <!--fragment jobs new -->
     <string name="icon_job">Icono reparacion</string>
-    <string name="hint_license_plate">Matrícula del vehículo</string>
-    <string name="hint_job_description">Descripción del trabajo</string>
+    <string name="hint_license_plate">Matrícula del vehículo:</string>
+    <string name="hint_job_description">Descripción del trabajo:</string>
+
     <string name="button_select_start_date">Seleccionar Fecha</string>
     <string name="hint_start_date">Introduce fecha inicio:</string>
     <string name="button_select_end_date">Fecha fin:</string>
     <string name="hint_end_date">Introduce fecha fin:</string>
-    <string name="hint_status">Estado</string>
-    <string name="hint_comments">Comentarios del mecánico</string>
+    <string name="hint_status">Estado:</string>
+    <string name="hint_comments">Comentarios del mecánico:</string>
 
     <string name="button_upload_image">Subir Imagen</string>
     <string name="button_change_image">Cambiar Imagen</string>
@@ -74,20 +75,23 @@
     <string name="label_tasks">Tareas:</string>
     <string name="button_add_task">Añadir Tarea</string>
     <string name="button_save_job">Guardar Trabajo</string>
-    <string name="button_modify_job">Ir a actualizar</string>
+    <string name="button_modify_job">IR A ACTUALIZAR</string>
     <string name="button_save_update_job">Guardar modificación</string>
     <string name="label_car_info">Información del vehículo</string>
 
     <!--fragment job detail -->
     <string name="label_description">Descripción</string>
     <string name="label_start_date">Fecha inicio</string>
-    <string name="label_end_date">Fecha fin</string>
+    <string name="label_end_date">Fecha fin:</string>
+    <string name="hint_detail_start_date">Fecha inicio:</string>
+    <string name="hint_detail_end_date">Fecha fin:</string>
+    <string name="hint_tasks">Tareas asociadas:</string>
 
     <string name="label_comments">Comentarios</string>
 
 
     <string name="button_edit_job">Modificar trabajo</string>
-    <string name="button_delete_job">Eliminar trabajo</string>
+    <string name="button_delete_job">ELIMINAR TRABAJO</string>
 
     <string name="button_search_job">Buscar trabajo</string>
     <string name="button_new_job">Nuevo trabajo</string>

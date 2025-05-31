@@ -35,29 +35,38 @@
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewDescription"
                 android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-            <TextView android:text="@string/hint_start_date"
+            <TextView android:text="@string/hint_detail_start_date"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewStartDate"
                 android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
-            <TextView android:text="@string/hint_end_date"
+            <TextView android:text="@string/hint_detail_end_date"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewEndDate"
                 android:gravity="center"
@@ -68,7 +77,10 @@
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewStatus"
                 android:gravity="center"
@@ -79,18 +91,44 @@
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewComments"
                 android:gravity="center"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"/>
 
+            <!-- TAREAS -->
+            <TextView
+                android:id="@+id/textViewTaskTitle"
+                android:text="@string/hint_tasks"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp" />
+
+            <TextView
+                android:id="@+id/textViewTaskList"
+                android:gravity="center"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingBottom="8dp" />
+
+
             <TextView android:text="@string/hint_license_plate"
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewLicensePlate"
                 android:gravity="center"
@@ -101,7 +139,10 @@
                 android:textStyle="bold"
                 android:gravity="center"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:paddingTop="16dp"
+                android:paddingBottom="4dp"/>
 
             <TextView android:id="@+id/textViewDni"
                 android:gravity="center"
@@ -110,6 +151,7 @@
 
             <ImageView
                 android:id="@+id/imageViewJob"
+                style="?android:attr/buttonStyle"
                 android:layout_width="match_parent"
                 android:layout_height="200dp"
                 android:scaleType="centerCrop"
@@ -123,10 +165,10 @@
                 android:layout_height="wrap_content"
                 android:text="@string/button_modify_job"
                 android:layout_marginTop="16dp"
-                android:backgroundTint="@color/yellow_cartaller"
-                android:textColor="@color/black"
+                android:backgroundTint="@color/black"
+                android:textColor="@color/white"
                 android:textAllCaps="false"
-                android:drawableLeft="@drawable/edit_32_negro"
+                android:drawableLeft="@drawable/edit_32dp_blanco"
                 android:drawablePadding="8dp" />
 
             <Button

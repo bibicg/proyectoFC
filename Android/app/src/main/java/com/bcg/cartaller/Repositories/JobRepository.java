@@ -99,6 +99,14 @@ public class JobRepository {
     }
 
     /**
+     * Este callback es para llamar al método encargado de mostrar las tareas asociadas a un trabajo
+     */
+    public interface TaskLoadCallback {
+        void onSuccess(List<String> tareas);
+        void onError(String message);
+    }
+
+    /**
      * Este callback es para llamar al método encargado de mostrar el trabajo actualizado
      * despyes de haberse modificado en el formulario de JobsNewFragment
 
@@ -229,6 +237,20 @@ public class JobRepository {
      */
     public void saveTasks(int jobId, List<String> taskDescriptions, TaskSaveCallback callback) {
         String url = SUPABASE_URL + "/rest/v1/tareas";
+
+        /**
+         * Necesito el conteo de tareas para que no falle el toast de la app,
+         * aunque se guardan correctamente en Supabase, Android muestra un toast de error
+         */
+        if (taskDescriptions.isEmpty()) {
+            callback.onSuccess();
+            return;
+        }
+
+        final int totalTasks = taskDescriptions.size();
+        final int[] successCount = {0};
+        final boolean[] errorReported = {false};
+
         for (String descripcion : taskDescriptions) {
             JSONObject taskJson = new JSONObject();
             try {
@@ -240,14 +262,20 @@ public class JobRepository {
                         url,
                         taskJson,
                         response -> {
-                            callback.onSuccess();
+                            successCount[0]++;
+                            if (successCount[0] == totalTasks && !errorReported[0]) {
+                                callback.onSuccess();  //solo se llama si todo ha ido bien
+                            }
                         },
                         error -> {
-                            String msg = "Error al guardar tarea: ";
-                            if (error.networkResponse != null) {
-                                msg += new String(error.networkResponse.data);
+                            if (!errorReported[0]) {
+                                errorReported[0] = true;
+                                //String msg = "Error al guardar tarea: ";
+                                if (error.networkResponse != null) {
+                                    //msg += new String(error.networkResponse.data);
+                                }
+                                //callback.onError(msg);
                             }
-                            callback.onError(msg);
                         }
                 ) {
                     @Override
@@ -267,7 +295,10 @@ public class JobRepository {
                 queue.add(request);
 
             } catch (JSONException e) {
-                callback.onError("Error preparando tarea JSON: " + e.getMessage());
+                if (!errorReported[0]) {
+                    errorReported[0] = true;
+                    callback.onError("Error preparando tarea JSON: " + e.getMessage());
+                }
                 return;
             }
         }
@@ -463,6 +494,52 @@ public class JobRepository {
 
         Volley.newRequestQueue(context).add(request);
     }
+
+
+    /**
+     * Método HTTP-GET para recuperar de la BD las tareas asociadas a un trabajo concreto,
+     * para poder verlas tanto en el detail job como en la edición del trabajo:
+     * @param jobId
+     * @param callback
+     */
+    public void getTasksByJobId(int jobId, TaskLoadCallback callback) {
+        String url = SUPABASE_URL + "/rest/v1/tareas?trabajo_id=eq." + jobId + "&select=descripcion";
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    List<String> tareas = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+                        try {
+                            tareas.add(response.getJSONObject(i).getString("descripcion"));
+                        } catch (JSONException e) {
+                            callback.onError("Error leyendo tareas");
+                            return;
+                        }
+                    }
+                    callback.onSuccess(tareas);
+                },
+                error -> {
+                    callback.onError("Error cargando tareas");
+                }
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = context.getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                return headers;
+            }
+        };
+
+        queue.add(request);
+    }
+
 
     /**
      * Metodo que recarga la info del JobDetailFragment después de haber hecho una modificacion en el trabajo

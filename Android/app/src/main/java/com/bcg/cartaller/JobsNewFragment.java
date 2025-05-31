@@ -311,19 +311,41 @@ public class JobsNewFragment extends Fragment {
             @Override
             public void onFound(int carId, String marca, String modelo) {
                 carIdSelect = carId;
-                Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
+
+                //sustituyo el toast por un dialogo que es más claro para el usuario:
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Vehículo encontrado")
+                        .setMessage("Marca: " + marca + "\nModelo: " + modelo)
+                        .setIcon(R.drawable.ok_dialog)
+                        .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                        .show();
             }
 
             @Override
             public void onNotFound() {
                 carIdSelect = -1;
-                Toast.makeText(getContext(), "No se encontró ningún vehículo con esa matrícula. Añádelo desde Clientes.", Toast.LENGTH_LONG).show();
+                //Toast.makeText(getContext(), "No se encontró ningún vehículo con esa matrícula. Añádelo desde Clientes.", Toast.LENGTH_LONG).show();
+
+                //sustituyo el toast por un dialogo que es más claro para el usuario:
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Vehículo no encontrado")
+                        .setMessage("No se encontró ningún vehículo con esa matrícula.\nAñádelo desde Clientes.")
+                        .setIcon(R.drawable.warning_dialog)
+                        .setPositiveButton("OK", null)
+                        .show();
             }
 
             @Override
             public void onError(String message) {
                 carIdSelect = -1;
-                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Error")
+                        .setMessage(message)
+                        .setIcon(R.drawable.error_dialog)
+                        .setPositiveButton("OK", null)
+                        .show();
             }
         });
     }
@@ -424,17 +446,31 @@ public class JobsNewFragment extends Fragment {
         jobRepository.saveJob(jobJson, new JobRepository.JobSaveCallback() { //LLLAMADA AL REPOSITORY
             @Override
             public void onSuccess(int jobId) {
-                Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + jobId + ")", Toast.LENGTH_SHORT).show();
-                if (!tareasSeleccionadas.isEmpty()) {
-                    //saveTask(jobId, tareasSeleccionadas); //metodo directo para guardar tareas
-                    callSaveTask(jobId); //llamada al metodo que a su vez llama al repository, que es quien hace la llamada http
-
-                }
+                //Toast.makeText(getContext(), "Trabajo guardado con éxito (ID: " + jobId + ")", Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Trabajo guardado")
+                        .setMessage("El trabajo ha sido guardado correctamente (ID: " + jobId + ")")
+                        .setIcon(R.drawable.ok_dialog)
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            //guardamos tareas:
+                            if (!tareasSeleccionadas.isEmpty()) {
+                                //saveTask(jobId, tareasSeleccionadas); //metodo directo para guardar tareas
+                                callSaveTask(jobId); //llamada al metodo que a su vez llama al repository, que es quien hace la llamada http
+                            }
+                        })
+                        .setCancelable(false)
+                        .show();
             }
 
             @Override
             public void onError(String message) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Error")
+                        .setMessage(message)
+                        .setIcon(R.drawable.error_dialog)
+                        .setPositiveButton("OK", null)
+                        .show();
             }
         });
     }
@@ -545,9 +581,10 @@ public class JobsNewFragment extends Fragment {
                  * Sustituyo el toast por un dialog, que es más claro para el usuario:
                  * Toast.makeText(getContext(), "Trabajo actualizado correctamente", Toast.LENGTH_SHORT).show();
                  */
-                new MaterialAlertDialogBuilder(requireContext())
+                new AlertDialog.Builder(getContext())
                         .setTitle("Actualización correcta")
                         .setMessage("El trabajo ha sido actualizado con éxito.")
+                        .setIcon(R.drawable.ok_dialog)
                         .setPositiveButton("Aceptar", (dialog, which) -> {
 
                             //envia una señal al fragment anterior (JobsDetailFragment) que es donde veo detalles del trabajo:
@@ -571,7 +608,13 @@ public class JobsNewFragment extends Fragment {
 
             @Override
             public void onError(String message) {
-                Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
+                new AlertDialog.Builder(getContext())
+                        .setTitle("Error")
+                        .setMessage(message)
+                        .setIcon(R.drawable.error_dialog)
+                        .setPositiveButton("OK", null)
+                        .show();
             }
         });
     }
