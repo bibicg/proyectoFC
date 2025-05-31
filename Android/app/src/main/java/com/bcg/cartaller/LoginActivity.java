@@ -113,11 +113,12 @@ public class LoginActivity extends AppCompatActivity {
                                 .putString("user_id", userUid)
                                 .apply();
 
-                        Toast.makeText(this, "Enhorabuena, te has registrado correctamente!!", Toast.LENGTH_SHORT).show();
+                        //COMENTADO PARA EL VIDEO, COMPROBAR PQ FALLA:
+                        //Toast.makeText(this, "Enhorabuena, te has registrado correctamente!!", Toast.LENGTH_SHORT).show();
 
                         insertUIDinMecanicos();
 
-                        Toast.makeText(this, "INICIA SESIÓN (PULSA EL BOTÓN Y ACCEDE A LA APP)", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(this, "INICIA SESIÓN (PULSA EL BOTÓN Y ACCEDE A LA APP)", Toast.LENGTH_SHORT).show();
                         loginUser(); //fuerzo que vaya al login porque sino queda raro
                         /**
                         startActivity(new Intent(LoginActivity.this, MainActivity.class));

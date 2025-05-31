@@ -23,6 +23,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
 import com.android.volley.AuthFailureError;
@@ -567,6 +568,7 @@ public class JobsNewFragment extends Fragment {
                 data.put("imagen", JSONObject.NULL);
             }
 
+
             Log.d("UPDATE_JSON", data.toString());
 
         } catch (JSONException e) {
@@ -587,20 +589,20 @@ public class JobsNewFragment extends Fragment {
                         .setIcon(R.drawable.ok_dialog)
                         .setPositiveButton("Aceptar", (dialog, which) -> {
 
+                            /**
                             //envia una señal al fragment anterior (JobsDetailFragment) que es donde veo detalles del trabajo:
                             Bundle result = new Bundle();
                             result.putBoolean("trabajo_actualizado", true);
                             getParentFragmentManager().setFragmentResult("update_success", result);
 
-                            //cierro este fragment y vuelvo atrás cuando el trabajo se ha actualizado:
-                            requireActivity().getSupportFragmentManager().popBackStack();
+                            //cierro este fragment y vuelvo atrás, JobsDetailFragment, cuando el trabajo se ha actualizado:
+                            //requireActivity().getSupportFragmentManager().popBackStack();*/
 
-                            //va de vuelta a JobsFragment:
-                            /**
-                            getParentFragmentManager().beginTransaction()
-                                    .replace(R.id.jobsGeneralContainer, new JobsFragment())
-                                    .addToBackStack(null)
-                                    .commit();*/
+                            ((AppCompatActivity) requireActivity()).getSupportFragmentManager()
+                                    .beginTransaction()
+                                    .replace(R.id.fragmentContainer, new JobsFragment())
+                                    .commit();
+
                         })
                         .setCancelable(false)
                         .show();
