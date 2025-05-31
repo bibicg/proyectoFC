@@ -49,6 +49,7 @@ public class JobsDetailFragment extends Fragment {
     private TextView tvTaskTitle, tvTaskList;
     private ImageView ivJob;
     private Button btnUpdate, btnDelete;
+    private String trabajoId;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -80,6 +81,7 @@ public class JobsDetailFragment extends Fragment {
             tvTaskList.setText(args.getString("tareas", ""));
             tvLicensePlate.setText(args.getString("matricula", ""));
             tvDniCustomer.setText(args.getString("dni_cliente", ""));
+            trabajoId = args.getString("trabajo_id", null);
 
             //para mostrar las tareas:
             int jobId = Integer.parseInt(args.getString("trabajo_id", "0"));
@@ -145,7 +147,7 @@ public class JobsDetailFragment extends Fragment {
                 boolean actualizado = result.getBoolean("trabajo_actualizado", false);
                 if (actualizado) {
                     Toast.makeText(getContext(), "Trabajo actualizado", Toast.LENGTH_SHORT).show();
-                    recargarDatos(); // metodo que vuelve a cargar el trabajo para que los datos se muestren modificados
+                    reloadData(); // metodo que vuelve a cargar el trabajo para que los datos se muestren modificados
                 }
             }
         });
@@ -229,6 +231,7 @@ public class JobsDetailFragment extends Fragment {
         queue.add(request);
     }
 
+    /**
     private void recargarDatos() {
         String trabajoId = getArguments().getString("trabajo_id");
         if (trabajoId == null) return;
@@ -281,7 +284,104 @@ public class JobsDetailFragment extends Fragment {
         };
 
         queue.add(request);
+    }*/
+
+    //en este se muestra la imagen
+    //pero no tareas ni matri ni dni
+    //en el anterior ninguno de los 3
+    private void reloadData() {
+        String jobId = getArguments().getString("trabajo_id");
+        if (jobId == null) {
+            Log.e("RECARGAR", "No se encontró trabajo_id. No se puede recargar.");
+            return;
+        }
+
+        String url = "https://gtiqlopkoiconeivobxa.supabase.co/rest/v1/trabajos?id=eq." + jobId + "&select=*";
+
+        JsonArrayRequest request = new JsonArrayRequest(
+                Request.Method.GET,
+                url,
+                null,
+                response -> {
+                    if (response.length() > 0) {
+                        JSONObject job = response.optJSONObject(0);
+                        if (job != null) {
+                            //actualiza la vista:
+                            String descripcion = job.optString("descripcion", "");
+                            String fechaInicio = job.optString("fecha_inicio", "");
+                            String fechaFin = job.optString("fecha_fin", "");
+                            String estado = job.optString("estado", "");
+                            String comentarios = job.optString("comentarios", "");
+                            String matricula = job.optString("matricula", "");
+                            String dni = job.optString("dni_cliente", "");
+                            String base64Image = job.optString("imagen", null);
+
+                            tvDescription.setText(descripcion);
+                            tvStartDate.setText(fechaInicio);
+                            tvEndDate.setText(fechaFin);
+                            tvStatus.setText(estado);
+                            tvComments.setText(comentarios);
+                            tvLicensePlate.setText(matricula);
+                            tvDniCustomer.setText(dni);
+
+                            Log.d("RECARGAR", "matricula: " + job.optString("matricula"));
+                            Log.d("RECARGAR", "dni_cliente: " + job.optString("dni_cliente"));
+
+
+                            if (base64Image != null && base64Image.contains(",")) {
+                                base64Image = base64Image.substring(base64Image.indexOf(",") + 1);
+                            }
+
+                            try {
+                                byte[] decodedBytes = Base64.decode(base64Image, Base64.DEFAULT);
+                                Bitmap bitmap = BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.length);
+                                ivJob.setVisibility(View.VISIBLE);
+                                ivJob.setImageBitmap(bitmap);
+                            } catch (Exception e) {
+                                ivJob.setVisibility(View.GONE);
+                                Log.e("IMAGEN", "Error al decodificar imagen actualizada: " + e.getMessage());
+                            }
+
+                            //recarga las tareas asociadas:
+                            try {
+                                int idTrabajo = Integer.parseInt(jobId);
+                                loadTasksForJob(idTrabajo);
+                            } catch (NumberFormatException e) {
+                                Log.e("TAREAS", "ID de trabajo inválido: " + e.getMessage());
+                            }
+
+                            //aqui se actualizan los argumentos por si se vuelven a usar:
+                            Bundle updatedArgs = getArguments();
+                            if (updatedArgs != null) {
+                                updatedArgs.putString("descripcion", descripcion);
+                                updatedArgs.putString("fecha_inicio", fechaInicio);
+                                updatedArgs.putString("fecha_fin", fechaFin);
+                                updatedArgs.putString("estado", estado);
+                                updatedArgs.putString("comentarios", comentarios);
+                                updatedArgs.putString("matricula", matricula);
+                                updatedArgs.putString("dni_cliente", dni);
+                                updatedArgs.putString("imagen", job.optString("imagen", null));
+                            }
+                        }
+                    }
+                },
+                error -> Log.e("SUPABASE", "Error al recargar trabajo: " + error.toString())
+        ) {
+            @Override
+            public Map<String, String> getHeaders() {
+                SharedPreferences prefs = requireContext().getSharedPreferences("SupabasePrefs", Context.MODE_PRIVATE);
+                String token = prefs.getString("access_token", "");
+
+                Map<String, String> headers = new HashMap<>();
+                headers.put("apikey", API_ANON_KEY);
+                headers.put("Authorization", "Bearer " + token);
+                return headers;
+            }
+        };
+
+        queue.add(request);
     }
+
 
     /**
      * Método que llama al repository, para poder mostrar las tareas asociadas al trabajo
