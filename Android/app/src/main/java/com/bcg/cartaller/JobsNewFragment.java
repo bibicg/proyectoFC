@@ -26,29 +26,17 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
 
-import com.android.volley.AuthFailureError;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
 import com.bcg.cartaller.Repositories.JobRepository;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * MÉTODOS HTTP TRASLADADOS AL REPOSITORY.
@@ -65,7 +53,7 @@ public class JobsNewFragment extends Fragment {
     //private RequestQueue queue;
     //private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     //private final String API_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd0aXFsb3Brb2ljb25laXZvYnhhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYxMjMyMTAsImV4cCI6MjA2MTY5OTIxMH0.T5MFUR9KAWXQOnoeZChYXu-FQ9LGClPp1lrSX8q733o";
-    private List<String> tareasSeleccionadas = new ArrayList<>();
+    private List<String> taskSelected = new ArrayList<>();
 
     //para el repository:
     private JobRepository jobRepository;
@@ -290,8 +278,8 @@ public class JobsNewFragment extends Fragment {
     private void callLoadTypeTask() {
         jobRepository.loadTypeTasks(new JobRepository.TypeTaskLoadCallback() {
             @Override
-            public void onLoaded(List<String> tareas) {
-                showDialogSelectTask(tareas);
+            public void onLoaded(List<String> tasks) {
+                showDialogSelectTask(tasks);
             }
 
             @Override
@@ -310,14 +298,15 @@ public class JobsNewFragment extends Fragment {
     private void callSearchCarByMatricula(String licensePlate) {
         jobRepository.searchCarByMatricula(licensePlate, new JobRepository.CarSearchCallback() {
             @Override
-            public void onFound(int carId, String marca, String modelo) {
+            //public void onFound(int carId, String marca, String modelo) {
+            public void onFound(int carId, String brand, String model) {
                 carIdSelect = carId;
                 //Toast.makeText(getContext(), "Vehículo encontrado: " + marca + " " + modelo, Toast.LENGTH_SHORT).show();
 
                 //sustituyo el toast por un dialogo que es más claro para el usuario:
                 new AlertDialog.Builder(getContext())
                         .setTitle("Vehículo encontrado")
-                        .setMessage("Marca: " + marca + "\nModelo: " + modelo)
+                        .setMessage("Marca: " + brand + "\nModelo: " + model)
                         .setIcon(R.drawable.ok_dialog)
                         .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                         .show();
@@ -356,10 +345,10 @@ public class JobsNewFragment extends Fragment {
 
     /**
      * Desde este método se pueden elegir una/varias tareas
-     * @param tareas
+     * @param tasks
      */
-    private void showDialogSelectTask(List<String> tareas) {
-        String[] items = tareas.toArray(new String[0]);
+    private void showDialogSelectTask(List<String> tasks) {
+        String[] items = tasks.toArray(new String[0]);
         boolean[] checkedItems = new boolean[items.length];
 
         new AlertDialog.Builder(requireContext())
@@ -367,8 +356,8 @@ public class JobsNewFragment extends Fragment {
                 .setMultiChoiceItems(items, checkedItems, (dialog, which, isChecked) -> checkedItems[which] = isChecked)
                 .setPositiveButton("Añadir", (dialog, which) -> {
                     for (int i = 0; i < checkedItems.length; i++) {
-                        if (checkedItems[i] && !tareasSeleccionadas.contains(items[i])) {
-                            tareasSeleccionadas.add(items[i]);
+                        if (checkedItems[i] && !taskSelected.contains(items[i])) {
+                            taskSelected.add(items[i]);
                         }
                     }
                 })
@@ -381,18 +370,18 @@ public class JobsNewFragment extends Fragment {
      */
     private void callSaveJob() {
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        String mecanicoId = prefs.getString("mecanico_id", null);
+        String mechanicId = prefs.getString("mecanico_id", null);
 
-        if (mecanicoId == null) {
+        if (mechanicId == null) {
             Toast.makeText(getContext(), "ID mecánico no encontrado. Por favor, inicie sesión nuevamente.", Toast.LENGTH_LONG).show();
             return;
         }
 
-        String descripcion = etDescriptionJob.getText().toString().trim();
-        String fechaInicio = etStartDate.getText().toString().trim();
-        String fechaFin = etEndDate.getText().toString().trim();
-        String estado = spinnerStatus.getSelectedItem().toString();
-        String comentarios = etComments.getText().toString().trim();
+        String description = etDescriptionJob.getText().toString().trim();
+        String startDate = etStartDate.getText().toString().trim();
+        String endDate = etEndDate.getText().toString().trim();
+        String status = spinnerStatus.getSelectedItem().toString();
+        String comments = etComments.getText().toString().trim();
 
         /** me dan error los campos null porque postgree no los maneja bien
          JSONObject jobJson = new JSONObject();
@@ -412,22 +401,22 @@ public class JobsNewFragment extends Fragment {
         JSONObject jobJson = new JSONObject();
         try {
             jobJson.put("vehiculo_id", carIdSelect);
-            jobJson.put("mecanico_id", mecanicoId);
-            jobJson.put("descripcion", descripcion);
-            jobJson.put("fecha_inicio", fechaInicio);
+            jobJson.put("mecanico_id", mechanicId);
+            jobJson.put("descripcion", description);
+            jobJson.put("fecha_inicio", startDate);
 
-            if (!fechaFin.isEmpty()) {
-                jobJson.put("fecha_fin", fechaFin);
+            if (!endDate.isEmpty()) {
+                jobJson.put("fecha_fin", endDate);
             } else {
                 jobJson.put("fecha_fin", JSONObject.NULL); // para que no falle en postgree
             }
 
-            if (!estado.isEmpty()) {
-                jobJson.put("estado", estado);
+            if (!status.isEmpty()) {
+                jobJson.put("estado", status);
             }
 
-            if (!comentarios.isEmpty()) {
-                jobJson.put("comentarios", comentarios);
+            if (!comments.isEmpty()) {
+                jobJson.put("comentarios", comments);
             } else {
                 jobJson.put("comentarios", JSONObject.NULL); // para que no falle en postgree
             }
@@ -454,7 +443,7 @@ public class JobsNewFragment extends Fragment {
                         .setIcon(R.drawable.ok_dialog)
                         .setPositiveButton("OK", (dialog, which) -> {
                             //guardamos tareas:
-                            if (!tareasSeleccionadas.isEmpty()) {
+                            if (!taskSelected.isEmpty()) {
                                 //saveTask(jobId, tareasSeleccionadas); //metodo directo para guardar tareas
                                 callSaveTask(jobId); //llamada al metodo que a su vez llama al repository, que es quien hace la llamada http
                             }
@@ -480,7 +469,7 @@ public class JobsNewFragment extends Fragment {
      * LLAMADA AL REPOSITOY JobRepository, que es quien ejecuta el método HTTP - POST para guardar las tareas
      */
     private void callSaveTask(int jobId){
-        jobRepository.saveTasks(jobId, tareasSeleccionadas, new JobRepository.TaskSaveCallback() {
+        jobRepository.saveTasks(jobId, taskSelected, new JobRepository.TaskSaveCallback() {
             @Override
             public void onSuccess() {
                 Log.d("SUPABASE", "Tareas guardadas correctamente.");
@@ -527,37 +516,37 @@ public class JobsNewFragment extends Fragment {
         JSONObject data = new JSONObject();
 
         try {
-            String descripcion = etDescriptionJob.getText().toString().trim();
-            if (descripcion.isEmpty()) {
+            String description = etDescriptionJob.getText().toString().trim();
+            if (description.isEmpty()) {
                 Toast.makeText(getContext(), "La descripción no puede estar vacía", Toast.LENGTH_SHORT).show();
                 return;
             }
-            data.put("descripcion", descripcion);
+            data.put("descripcion", description);
 
-            String fechaInicio = etStartDate.getText().toString().trim();
-            if (fechaInicio.isEmpty()) {
+            String startDate = etStartDate.getText().toString().trim();
+            if (startDate.isEmpty()) {
                 Toast.makeText(getContext(), "La fecha de inicio es obligatoria", Toast.LENGTH_SHORT).show();
                 return;
             }
-            data.put("fecha_inicio", fechaInicio);
+            data.put("fecha_inicio", startDate);
 
-            String fechaFin = etEndDate.getText().toString().trim();
-            if (!fechaFin.isEmpty() && !fechaFin.equalsIgnoreCase("null")) {
-                data.put("fecha_fin", fechaFin);
+            String endDate = etEndDate.getText().toString().trim();
+            if (!endDate.isEmpty() && !endDate.equalsIgnoreCase("null")) {
+                data.put("fecha_fin", endDate);
             } else {
                 data.put("fecha_fin", JSONObject.NULL);
             }
 
-            String comentarios = etComments.getText().toString().trim();
-            if (!comentarios.isEmpty() && !comentarios.equalsIgnoreCase("null")) {
-                data.put("comentarios", comentarios);
+            String comments = etComments.getText().toString().trim();
+            if (!comments.isEmpty() && !comments.equalsIgnoreCase("null")) {
+                data.put("comentarios", comments);
             } else {
                 data.put("comentarios", JSONObject.NULL);
             }
 
-            String estado = spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString().trim() : "";
-            if (!estado.isEmpty() && !estado.equalsIgnoreCase("null")) {
-                data.put("estado", estado);
+            String status = spinnerStatus.getSelectedItem() != null ? spinnerStatus.getSelectedItem().toString().trim() : "";
+            if (!status.isEmpty() && !status.equalsIgnoreCase("null")) {
+                data.put("estado", status);
             } else {
                 data.put("estado", JSONObject.NULL);
             }
@@ -680,10 +669,6 @@ public class JobsNewFragment extends Fragment {
     /**
      * Desactualizado, ahora se hace desde el repository
      * GUARDAR/CREAR UN NUEVO TRABAJO - guardarTrabajo
-     * @param vehiculoId
-     * @param descripcion
-     * @param fechaInicio
-     * @param tareasDescripcion
      *
      * Añadir los nuevos campos en el guardado del trabajo
      */
