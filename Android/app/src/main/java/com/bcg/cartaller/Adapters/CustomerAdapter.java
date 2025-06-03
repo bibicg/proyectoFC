@@ -94,7 +94,9 @@ public class CustomerAdapter extends RecyclerView.Adapter<CustomerAdapter.Custom
         holder.txtDni.setText("DNI: " + customer.dni);
         holder.txtName.setText("Nombre: " + customer.name);
         holder.txtPhone.setText("Teléfono: " + customer.phone);
-        holder.txtCars.setText("Vehículos: " + customer.numCars);
+        //holder.txtCars.setText("Vehículos: " + customer.numCars); //no se cuentan
+        holder.txtCars.setVisibility(View.GONE); //lo oculto
+
     }
 
     @Override

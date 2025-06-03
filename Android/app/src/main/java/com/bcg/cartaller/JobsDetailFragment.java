@@ -144,8 +144,8 @@ public class JobsDetailFragment extends Fragment {
         getParentFragmentManager().setFragmentResultListener("update_success", this, new FragmentResultListener() {
             @Override
             public void onFragmentResult(@NonNull String requestKey, @NonNull Bundle result) {
-                boolean actualizado = result.getBoolean("trabajo_actualizado", false);
-                if (actualizado) {
+                boolean update = result.getBoolean("trabajo_actualizado", false);
+                if (update) {
                     Toast.makeText(getContext(), "Trabajo actualizado", Toast.LENGTH_SHORT).show();
                     reloadData(); // metodo que vuelve a cargar el trabajo para que los datos se muestren modificados
                 }
@@ -166,6 +166,7 @@ public class JobsDetailFragment extends Fragment {
         new AlertDialog.Builder(requireContext())
                 .setTitle("Eliminar trabajo")
                 .setMessage("¿Estás seguro de que deseas eliminar este trabajo?")
+                .setIcon(R.drawable.warning_dialog)
                 .setPositiveButton("Sí", (dialog, which) -> deleteJob(trabajoId)) //llamada a eliminar
                 .setNegativeButton("Cancelar", null)
                 .show();
@@ -182,8 +183,8 @@ public class JobsDetailFragment extends Fragment {
         Log.d("SUPABASE", "URL: " + url);
 
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        String mecanicoId = prefs.getString("mecanico_id", null);
-        Log.d("SUPABASE", "Verificando mecanico_id actual (SharedPreferences): " + mecanicoId);
+        String mechanicId = prefs.getString("mecanico_id", null);
+        Log.d("SUPABASE", "Verificando mecanico_id actual (SharedPreferences): " + mechanicId);
 
         StringRequest request = new StringRequest(
                 Request.Method.DELETE,
@@ -194,8 +195,9 @@ public class JobsDetailFragment extends Fragment {
 
                     //se muestra un dialog de confirmacion en lugar de un toast:
                     new AlertDialog.Builder(requireContext())
-                            .setTitle("Job eliminado")
+                            .setTitle("Trabajo eliminado")
                             .setMessage("El trabajo ha sido eliminado correctamente.")
+                            .setIcon(R.drawable.ok_dialog)
                             .setPositiveButton("Aceptar", (dialog, which) -> {
                                 FragmentManager fm = requireActivity().getSupportFragmentManager();
                                 if (fm.getBackStackEntryCount() > 0) {
@@ -307,21 +309,21 @@ public class JobsDetailFragment extends Fragment {
                         JSONObject job = response.optJSONObject(0);
                         if (job != null) {
                             //actualiza la vista:
-                            String descripcion = job.optString("descripcion", "");
-                            String fechaInicio = job.optString("fecha_inicio", "");
-                            String fechaFin = job.optString("fecha_fin", "");
-                            String estado = job.optString("estado", "");
-                            String comentarios = job.optString("comentarios", "");
-                            String matricula = job.optString("matricula", "");
+                            String description = job.optString("descripcion", "");
+                            String startDate = job.optString("fecha_inicio", "");
+                            String endDate = job.optString("fecha_fin", "");
+                            String status = job.optString("estado", "");
+                            String comments = job.optString("comentarios", "");
+                            String licensePlate = job.optString("matricula", "");
                             String dni = job.optString("dni_cliente", "");
                             String base64Image = job.optString("imagen", null);
 
-                            tvDescription.setText(descripcion);
-                            tvStartDate.setText(fechaInicio);
-                            tvEndDate.setText(fechaFin);
-                            tvStatus.setText(estado);
-                            tvComments.setText(comentarios);
-                            tvLicensePlate.setText(matricula);
+                            tvDescription.setText(description);
+                            tvStartDate.setText(startDate);
+                            tvEndDate.setText(endDate);
+                            tvStatus.setText(status);
+                            tvComments.setText(comments);
+                            tvLicensePlate.setText(licensePlate);
                             tvDniCustomer.setText(dni);
 
                             Log.d("RECARGAR", "matricula: " + job.optString("matricula"));
@@ -344,8 +346,8 @@ public class JobsDetailFragment extends Fragment {
 
                             //recarga las tareas asociadas:
                             try {
-                                int idTrabajo = Integer.parseInt(jobId);
-                                loadTasksForJob(idTrabajo);
+                                int idJob = Integer.parseInt(jobId);
+                                loadTasksForJob(idJob);
                             } catch (NumberFormatException e) {
                                 Log.e("TAREAS", "ID de trabajo inválido: " + e.getMessage());
                             }
@@ -353,12 +355,12 @@ public class JobsDetailFragment extends Fragment {
                             //aqui se actualizan los argumentos por si se vuelven a usar:
                             Bundle updatedArgs = getArguments();
                             if (updatedArgs != null) {
-                                updatedArgs.putString("descripcion", descripcion);
-                                updatedArgs.putString("fecha_inicio", fechaInicio);
-                                updatedArgs.putString("fecha_fin", fechaFin);
-                                updatedArgs.putString("estado", estado);
-                                updatedArgs.putString("comentarios", comentarios);
-                                updatedArgs.putString("matricula", matricula);
+                                updatedArgs.putString("descripcion", description);
+                                updatedArgs.putString("fecha_inicio", startDate);
+                                updatedArgs.putString("fecha_fin", endDate);
+                                updatedArgs.putString("estado", status);
+                                updatedArgs.putString("comentarios", comments);
+                                updatedArgs.putString("matricula", licensePlate);
                                 updatedArgs.putString("dni_cliente", dni);
                                 updatedArgs.putString("imagen", job.optString("imagen", null));
                             }
