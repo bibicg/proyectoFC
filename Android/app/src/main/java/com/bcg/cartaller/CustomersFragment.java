@@ -24,8 +24,8 @@ public class CustomersFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_customers, container, false);
 
         // Botones para buscar clientes y para añadir un nuevo customer
-        Button btnBuscar = view.findViewById(R.id.btnSearchCustomer);
-        Button btnNuevo = view.findViewById(R.id.btnNewCustomer);
+        Button btnSearch = view.findViewById(R.id.btnSearchCustomer);
+        Button btnNew = view.findViewById(R.id.btnNewCustomer);
 
         // Este es el contenedor donde se van a cargar los fragments (search y new)
         getChildFragmentManager().beginTransaction()
@@ -42,7 +42,7 @@ public class CustomersFragment extends Fragment {
         });*/
 
         //Hacer lo mismo que en la busqueda de trabajos, mostrando las opciones en un Dialog:
-        btnBuscar.setOnClickListener(v -> {
+        btnSearch.setOnClickListener(v -> {
             CustomersSearchFragment fragment = new CustomersSearchFragment();
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.customersGeneralContainer, fragment)
@@ -57,7 +57,7 @@ public class CustomersFragment extends Fragment {
         });
 
 
-        btnNuevo.setOnClickListener(v -> {
+        btnNew.setOnClickListener(v -> {
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.customersGeneralContainer, new CustomersNewFragment())
                     .commit();

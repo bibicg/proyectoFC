@@ -173,6 +173,7 @@ public class JobRepository {
                 Map<String, String> headers = new HashMap<>();
                 headers.put("apikey", API_ANON_KEY);
                 headers.put("Authorization", "Bearer " + token);
+                //headers.put("Content-Type", "application/json"); // ya no es necesario pq lo hago en getBodyContentType
                 headers.put("Prefer", "return=representation"); //para recuperar el id del trabajo
                 return headers;
             }
