@@ -26,6 +26,7 @@ import java.util.Map;
  * Cuando  se pulsa en un customer de los encontrados, vas a su detalle
  */
 public class CustomerDetailFragment extends Fragment {
+/**
     private TextView txtDni, txtName, txtPhone;
     private final String SUPABASE_URL = "https://gtiqlopkoiconeivobxa.supabase.co";
     private final String API_ANON_KEY = "<API_KEY_AQUI>";
@@ -51,7 +52,7 @@ public class CustomerDetailFragment extends Fragment {
      * cargarDetalleCliente
      * @param dni
      */
-    private void showDetailCustomer(String dni) {
+/**    private void showDetailCustomer(String dni) {
         String url = SUPABASE_URL + "/rest/v1/clientes?dni=eq." + dni;
 
         JsonArrayRequest request = new JsonArrayRequest(Request.Method.GET, url, null,
@@ -80,5 +81,5 @@ public class CustomerDetailFragment extends Fragment {
         };
 
         Volley.newRequestQueue(requireContext()).add(request);
-    }
+    }*/
 }

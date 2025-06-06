@@ -101,28 +101,20 @@ public class ProfileFragment extends Fragment {
     private void showActiveJobs() {
         //lo primero es recuperar el id del usuario para poder ver solo sus jobs
         SharedPreferences prefs = requireContext().getSharedPreferences("prefs", Context.MODE_PRIVATE);
-        String mecanicoId = prefs.getString("mecanico_id", null);
+        String mechanicId = prefs.getString("mecanico_id", null);
 
-        if (mecanicoId == null) {
+        if (mechanicId == null) {
             Toast.makeText(getContext(), "ID mecánico no encontrado", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        Log.d("SUPABASE", "Usando mecanico_id: " + mecanicoId);
+        Log.d("SUPABASE", "Usando mecanico_id: " + mechanicId);
 
         //es como una consulta sql hecha desde la app con las particularidades de supabase, como el "eq"
         //se mostrarán todos los jobs cuyo estado sea pendiente o en curso
-        /**
-        String url = SUPABASE_URL + "/rest/v1/jobs" +
-                "?select=id,estado,descripcion,fecha_inicio,vehiculos(matricula,customer:clientes(dni))" +
-                "&mecanico_id=eq." + mecanicoId +
-                "&estado=in.(pendiente,en%20curso)";
-         */
-        //Ahora hay que añadir los nuevos campos que añadi a posteriori:
         String url = SUPABASE_URL + "/rest/v1/trabajos" +
-                //"?select=id,estado,descripcion,fecha_inicio,imagen,vehiculos(matricula,cliente:clientes(dni))" +
                 "?select=id,estado,descripcion,fecha_inicio,fecha_fin,comentarios,imagen,vehiculos(matricula,cliente:clientes(dni))" +
-                "&mecanico_id=eq." + mecanicoId +
+                "&mecanico_id=eq." + mechanicId +
                 "&estado=in.(pendiente,en%20curso)";
 
 
